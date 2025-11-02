@@ -26,6 +26,16 @@ AstNode *ast_make_import(char *module_name, int line, int column) {
   return node;
 }
 
+AstNode *ast_make_let(char *name, AstNode *value, int line, int column) {
+  AstNode *node = malloc(sizeof(AstNode));
+  node->type = AST_LET;
+  node->line = line;
+  node->column = column;
+  node->as.let.name = strdup(name);
+  node->as.let.value = value;
+  return node;
+}
+
 AstNode *ast_make_call(AstNode *callee, AstNode **args, int arg_count, int line,
                        int column) {
   AstNode *node = malloc(sizeof(AstNode));
@@ -110,6 +120,10 @@ void ast_free(AstNode *node) {
   case AST_IMPORT:
     free(node->as.import.module_name);
     break;
+  case AST_LET:
+    free(node->as.let.name);
+    ast_free(node->as.let.value);
+    break;
   case AST_CALL:
     ast_free(node->as.call.callee);
     for (int i = 0; i < node->as.call.arg_count; i++) {
@@ -151,6 +165,10 @@ void ast_print(AstNode *node, int indent) {
   case AST_IMPORT:
     printf("Import: %s\n", node->as.import.module_name);
     break;
+  case AST_LET:
+    printf("Let: %s :=\n", node->as.let.name);
+    ast_print(node->as.let.value, indent + 1);
+    break;
   case AST_CALL:
     printf("Call\n");
     ast_print(node->as.call.callee, indent + 1);
@@ -173,6 +191,9 @@ void ast_print(AstNode *node, int indent) {
     break;
   case AST_FLOAT_LITERAL:
     printf("Float: %f\n", node->as.float_literal.value);
+    break;
+  case AST_ASSIGNMENT:
+    // Not yet implemented
     break;
   }
 }

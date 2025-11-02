@@ -1,0 +1,23 @@
+// tests/variables_basic.sat - Basic variable test
+
+import io
+
+let name := "Satori"
+io.println "Test 1: Variable with string"
+io.println name
+
+let x := 42
+io.println "Test 2: Variable with int"
+io.println x
+
+let pi := 3.14
+io.println "Test 3: Variable with float"
+io.println pi
+
+io.println "Test 4: Multiple variables"
+io.println name
+io.println x
+io.println pi
+
+io.println ""
+io.println "All variable tests passed!"

@@ -56,6 +56,7 @@ void vm_init(VM *vm) {
   chunk_init(&vm->chunk);
   vm->ip = vm->chunk.code;
   vm->stack_top = 0;
+  vm->local_count = 0;
   module_system_init(vm);
 }
 
@@ -121,6 +122,29 @@ bool vm_run(VM *vm) {
 
     case OP_POP: {
       stack_pop(vm);
+      break;
+    }
+    
+    case OP_SET_LOCAL: {
+      u8 slot = READ_BYTE();
+      if (slot >= SATORI_MAX_LOCALS) {
+        error_fatal("Local variable slot %d out of bounds", slot);
+        return false;
+      }
+      vm->locals[slot] = stack_pop(vm);  // Pop the value from stack
+      if (slot >= vm->local_count) {
+        vm->local_count = slot + 1;
+      }
+      break;
+    }
+    
+    case OP_GET_LOCAL: {
+      u8 slot = READ_BYTE();
+      if (slot >= vm->local_count) {
+        error_fatal("Undefined local variable at slot %d", slot);
+        return false;
+      }
+      stack_push(vm, vm->locals[slot]);
       break;
     }
     

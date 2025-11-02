@@ -129,6 +129,21 @@ static AstNode *parse_statement(Parser *p) {
     return node;
   }
 
+  if (match(p, TOKEN_LET)) {
+    // let name := value
+    consume(p, TOKEN_IDENTIFIER, "expected variable name after 'let'");
+    char *name = token_to_string(p->previous);
+    int line = p->previous.line;
+    int column = p->previous.column;
+    
+    consume(p, TOKEN_COLON_EQUAL, "expected ':=' after variable name");
+    
+    AstNode *value = parse_call(p);  // Parse the value expression
+    AstNode *node = ast_make_let(name, value, line, column);
+    free(name);
+    return node;
+  }
+
   // Expression statement
   return parse_call(p);
 }

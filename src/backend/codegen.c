@@ -1,13 +1,26 @@
 // src/codegen.c - Emit bytecode
 
+#define _POSIX_C_SOURCE 200809L
+
 #include "backend/codegen.h"
 #include "error/error.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+
+// Local variable tracking
+typedef struct {
+  char *name;
+  int slot;
+} Local;
 
 typedef struct {
   Chunk *chunk;
   bool had_error;
+  
+  // Local variables
+  Local locals[SATORI_MAX_LOCALS];
+  int local_count;
 } Compiler;
 
 static void emit_byte(Compiler *c, u8 byte) { chunk_write(c->chunk, byte); }
@@ -25,6 +38,30 @@ static int make_constant(Compiler *c, Value value) {
     return 0;
   }
   return constant;
+}
+
+// Add a local variable
+static int add_local(Compiler *c, const char *name) {
+  if (c->local_count >= SATORI_MAX_LOCALS) {
+    error_report_simple("Too many local variables");
+    c->had_error = true;
+    return -1;
+  }
+  
+  Local *local = &c->locals[c->local_count];
+  local->name = strdup(name);
+  local->slot = c->local_count;
+  return c->local_count++;
+}
+
+// Find a local variable by name
+static int resolve_local(Compiler *c, const char *name) {
+  for (int i = c->local_count - 1; i >= 0; i--) {
+    if (strcmp(c->locals[i].name, name) == 0) {
+      return c->locals[i].slot;
+    }
+  }
+  return -1;  // Not found
 }
 
 static void compile_node(Compiler *c, AstNode *node);
@@ -79,15 +116,49 @@ static void compile_node(Compiler *c, AstNode *node) {
   }
 
   case AST_IMPORT: {
-    // For now, just emit a no-op import
     int constant =
         make_constant(c, value_make_string(node->as.import.module_name));
     emit_bytes(c, OP_IMPORT, constant);
     break;
   }
 
+  case AST_LET: {
+    // let name := value
+    // Compile the value expression first (puts it on stack)
+    compile_node(c, node->as.let.value);
+    
+    // Add local variable and emit OP_SET_LOCAL
+    int slot = add_local(c, node->as.let.name);
+    if (slot >= 0) {
+      emit_bytes(c, OP_SET_LOCAL, slot);
+    }
+    break;
+  }
+  
+  case AST_IDENTIFIER: {
+    // Look up the identifier as a local variable
+    int slot = resolve_local(c, node->as.identifier.name);
+    if (slot >= 0) {
+      // It's a local variable
+      emit_bytes(c, OP_GET_LOCAL, slot);
+    } else {
+      // Not found - this is an error for now
+      error_report_simple("Undefined variable");
+      c->had_error = true;
+    }
+    break;
+  }
+
   case AST_CALL: {
     compile_call(c, node);
+    break;
+  }
+  
+  case AST_MEMBER_ACCESS: {
+    // Member access is only valid as part of a call
+    // If we get here, it's an error (e.g., just `io.println` without calling it)
+    error_report_simple("Member access must be used in a call");
+    c->had_error = true;
     break;
   }
 
@@ -110,6 +181,13 @@ static void compile_node(Compiler *c, AstNode *node) {
     emit_bytes(c, OP_CONSTANT, constant);
     break;
   }
+  
+  case AST_ASSIGNMENT: {
+    // Not yet implemented
+    error_report_simple("Assignment not yet implemented");
+    c->had_error = true;
+    break;
+  }
 
   default:
     error_report_simple("Unknown AST node type in codegen");
@@ -122,9 +200,15 @@ bool codegen_compile(AstNode *ast, Chunk *chunk) {
   Compiler compiler;
   compiler.chunk = chunk;
   compiler.had_error = false;
+  compiler.local_count = 0;
 
   compile_node(&compiler, ast);
   emit_byte(&compiler, OP_HALT);
+  
+  // Free local variable names
+  for (int i = 0; i < compiler.local_count; i++) {
+    free(compiler.locals[i].name);
+  }
 
   return !compiler.had_error;
 }

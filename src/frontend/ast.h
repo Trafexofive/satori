@@ -9,6 +9,8 @@
 typedef enum {
   AST_PROGRAM,
   AST_IMPORT,
+  AST_LET,           // Variable declaration
+  AST_ASSIGNMENT,    // Variable assignment (for future)
   AST_CALL,
   AST_MEMBER_ACCESS,
   AST_IDENTIFIER,
@@ -39,6 +41,11 @@ typedef struct {
 } AstIdentifier;
 
 typedef struct {
+  char *name;        // Variable name
+  AstNode *value;    // Initial value expression
+} AstLet;
+
+typedef struct {
   char *value;
 } AstStringLiteral;
 
@@ -63,6 +70,7 @@ struct AstNode {
   union {
     AstProgram program;
     AstImport import;
+    AstLet let;
     AstCall call;
     AstMemberAccess member_access;
     AstIdentifier identifier;
@@ -75,6 +83,7 @@ struct AstNode {
 // Constructors
 AstNode *ast_make_program(void);
 AstNode *ast_make_import(char *module_name, int line, int column);
+AstNode *ast_make_let(char *name, AstNode *value, int line, int column);
 AstNode *ast_make_call(AstNode *callee, AstNode **args, int arg_count, int line,
                        int column);
 AstNode *ast_make_member_access(AstNode *object, char *member, int line,

@@ -10,6 +10,8 @@
 typedef enum {
   OP_CONSTANT,      // Load constant
   OP_POP,           // Pop from stack
+  OP_GET_LOCAL,     // Get local variable
+  OP_SET_LOCAL,     // Set local variable
   OP_GET_GLOBAL,    // Get global variable/function
   OP_CALL_NATIVE,   // Call native function
   OP_IMPORT,        // Import module
@@ -33,6 +35,10 @@ typedef struct VM {
   u8 *ip;                          // Instruction pointer
   Value stack[SATORI_STACK_MAX];
   int stack_top;
+  
+  // Local variables (simple array for now, no scoping)
+  Value locals[SATORI_MAX_LOCALS];
+  int local_count;
   
   // Module system
   Table globals;                   // Global functions and variables
