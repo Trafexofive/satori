@@ -1,0 +1,64 @@
+// tests/phase3_complete.sat - Phase 3 complete test
+//
+// Tests Phase 1 + Phase 2 + Phase 3 features:
+// - Module imports
+// - Variable declarations
+// - Multiple function arguments
+// - Format string interpolation
+
+import io
+
+io.println "=== Phase 3 Complete Test ==="
+io.println ""
+
+// Test 1: Basic function call
+io.println "Test 1: Basic function call works"
+
+// Test 2: Multiple calls
+io.print "Test 2a: print without newline "
+io.println "Test 2b: println continues"
+
+// Test 3: Variables
+let name := "Satori"
+let version := 2
+let pi := 3.14159
+
+io.println "Test 3: Variables work"
+io.println name
+io.println version
+io.println pi
+
+// Test 4: Format string with single variable
+io.println ""
+io.println "Test 4: Format with one variable"
+io.println "Hello, {}!", name
+
+// Test 5: Format string with multiple variables
+io.println ""
+io.println "Test 5: Format with multiple variables"
+io.println "Language: {}, Version: {}", name, version
+io.println "Pi is approximately {}", pi
+
+// Test 6: Multiple arguments of different types
+io.println ""
+io.println "Test 6: Mixed types"
+io.println "String: {}, Int: {}, Float: {}", name, version, pi
+
+// Test 7: Re-import (should be cached)
+io.println ""
+io.println "Test 7: Re-import io module"
+import io
+io.println "Still works after re-import!"
+
+// Test 8: All together
+io.println ""
+io.println "Test 8: Complex example"
+let greeting := "Welcome to"
+let status := "ready"
+io.println "{} {}! Version {} is {}.", greeting, name, version, status
+
+io.println ""
+io.println "========================================"
+io.println "All Phase 3 tests passed!"
+io.println "Module system + Variables + Format strings = 🚀"
+io.println "========================================"

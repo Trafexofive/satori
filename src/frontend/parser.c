@@ -105,10 +105,24 @@ static AstNode *parse_call(Parser *p) {
       free(member);
     } else if (check(p, TOKEN_STRING) || check(p, TOKEN_INT) ||
                check(p, TOKEN_FLOAT) || check(p, TOKEN_IDENTIFIER)) {
-      // Function call with arguments (no parens needed for single arg)
-      AstNode **args = malloc(sizeof(AstNode *));
-      args[0] = parse_primary(p);
-      expr = ast_make_call(expr, args, 1, p->previous.line, p->previous.column);
+      // Function call with arguments (comma-separated, no parens)
+      int arg_capacity = 4;
+      int arg_count = 0;
+      AstNode **args = malloc(sizeof(AstNode *) * arg_capacity);
+      
+      // Parse first argument
+      args[arg_count++] = parse_primary(p);
+      
+      // Parse additional comma-separated arguments
+      while (match(p, TOKEN_COMMA)) {
+        if (arg_count >= arg_capacity) {
+          arg_capacity *= 2;
+          args = realloc(args, sizeof(AstNode *) * arg_capacity);
+        }
+        args[arg_count++] = parse_primary(p);
+      }
+      
+      expr = ast_make_call(expr, args, arg_count, p->previous.line, p->previous.column);
     } else {
       break;
     }
