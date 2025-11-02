@@ -3,7 +3,9 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "runtime/vm.h"
+#include "runtime/module.h"
 #include "core/value.h"
+#include "core/table.h"
 #include "error/error.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,9 +56,13 @@ void vm_init(VM *vm) {
   chunk_init(&vm->chunk);
   vm->ip = vm->chunk.code;
   vm->stack_top = 0;
+  module_system_init(vm);
 }
 
-void vm_free(VM *vm) { chunk_free(&vm->chunk); }
+void vm_free(VM *vm) {
+  chunk_free(&vm->chunk);
+  module_system_free(vm);
+}
 
 static void stack_push(VM *vm, Value value) {
   if (vm->stack_top >= SATORI_STACK_MAX) {
@@ -92,6 +98,7 @@ bool vm_run(VM *vm) {
 
 #define READ_BYTE() (*vm->ip++)
 #define READ_CONSTANT() (vm->chunk.constants[READ_BYTE()])
+#define READ_STRING() AS_STRING(READ_CONSTANT())
 
   for (;;) {
 #ifdef SATORI_DEBUG_TRACE_EXECUTION
@@ -116,9 +123,55 @@ bool vm_run(VM *vm) {
       stack_pop(vm);
       break;
     }
+    
+    case OP_GET_GLOBAL: {
+      const char *name = READ_STRING();
+      Value value;
+      if (!table_get(&vm->globals, name, &value)) {
+        error_fatal("Undefined global '%s'", name);
+        return false;
+      }
+      stack_push(vm, value);
+      break;
+    }
+    
+    case OP_CALL_NATIVE: {
+      u8 arg_count = READ_BYTE();
+      
+      // Get the function from the stack
+      Value callee = stack_peek(vm, arg_count);
+      
+      if (!IS_NATIVE_FN(callee)) {
+        error_fatal("Can only call native functions");
+        return false;
+      }
+      
+      // Prepare arguments (they're already on the stack)
+      Value *args = &vm->stack[vm->stack_top - arg_count];
+      
+      // Call the native function
+      NativeFn native = AS_NATIVE_FN(callee);
+      Value result = native(arg_count, args);
+      
+      // Pop arguments and function from stack
+      vm->stack_top -= arg_count + 1;
+      
+      // Push result
+      stack_push(vm, result);
+      break;
+    }
+
+    case OP_IMPORT: {
+      const char *module_name = READ_STRING();
+      if (!module_load(vm, module_name)) {
+        error_fatal("Failed to load module '%s'", module_name);
+        return false;
+      }
+      break;
+    }
 
     case OP_PRINT: {
-      // Built-in print - for now just call println
+      // Deprecated built-in print - for backwards compatibility
       int arg_count = READ_BYTE();
       Value args[256];
       for (int i = arg_count - 1; i >= 0; i--) {
@@ -126,12 +179,6 @@ bool vm_run(VM *vm) {
       }
       builtin_println(arg_count, args);
       stack_push(vm, value_make_nil());
-      break;
-    }
-
-    case OP_IMPORT: {
-      // For now, just skip - we'll handle modules properly later
-      READ_BYTE(); // module name constant index
       break;
     }
 
@@ -147,4 +194,5 @@ bool vm_run(VM *vm) {
 
 #undef READ_BYTE
 #undef READ_CONSTANT
+#undef READ_STRING
 }

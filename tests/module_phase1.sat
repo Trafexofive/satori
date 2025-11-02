@@ -1,0 +1,30 @@
+// tests/module_phase1.sat - Phase 1 module test (no variables)
+//
+// Tests only what's currently implemented:
+// - import statements
+// - module.function() calls
+// - String literals only
+
+import io
+
+io.println "=== Phase 1 Module System Test ==="
+io.println ""
+
+io.println "Test 1: Basic io.println works"
+io.print "Test 2: io.print works "
+io.println "(continued on same line)"
+
+io.println ""
+io.println "Test 3: Multiple io.println calls"
+io.println "Line 1"
+io.println "Line 2"
+io.println "Line 3"
+
+io.println ""
+io.println "Test 4: Re-import io (should be cached)"
+
+import io
+
+io.println "Test 5: Still works after re-import"
+io.println ""
+io.println "=== All Phase 1 tests passed! ==="

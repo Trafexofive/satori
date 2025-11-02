@@ -36,20 +36,22 @@ struct Value {
 };
 
 // Type checking macros
-#define IS_NIL(value)    ((value).type == VALUE_NIL)
-#define IS_BOOL(value)   ((value).type == VALUE_BOOL)
-#define IS_INT(value)    ((value).type == VALUE_INT)
-#define IS_FLOAT(value)  ((value).type == VALUE_FLOAT)
-#define IS_NUMBER(value) (IS_INT(value) || IS_FLOAT(value))
-#define IS_STRING(value) ((value).type == VALUE_STRING)
-#define IS_OBJ(value)    ((value).type == VALUE_OBJ)
+#define IS_NIL(value)       ((value).type == VALUE_NIL)
+#define IS_BOOL(value)      ((value).type == VALUE_BOOL)
+#define IS_INT(value)       ((value).type == VALUE_INT)
+#define IS_FLOAT(value)     ((value).type == VALUE_FLOAT)
+#define IS_NUMBER(value)    (IS_INT(value) || IS_FLOAT(value))
+#define IS_STRING(value)    ((value).type == VALUE_STRING)
+#define IS_NATIVE_FN(value) ((value).type == VALUE_NATIVE_FN)
+#define IS_OBJ(value)       ((value).type == VALUE_OBJ)
 
 // Value extraction macros
-#define AS_BOOL(value)   ((value).u.as_bool)
-#define AS_INT(value)    ((value).u.as_int)
-#define AS_FLOAT(value)  ((value).u.as_float)
-#define AS_STRING(value) ((value).u.as_string)
-#define AS_OBJ(value)    ((value).u.as_obj)
+#define AS_BOOL(value)      ((value).u.as_bool)
+#define AS_INT(value)       ((value).u.as_int)
+#define AS_FLOAT(value)     ((value).u.as_float)
+#define AS_STRING(value)    ((value).u.as_string)
+#define AS_NATIVE_FN(value) ((value).u.as_native_fn)
+#define AS_OBJ(value)       ((value).u.as_obj)
 
 // Value constructors
 Value value_make_nil(void);

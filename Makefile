@@ -10,14 +10,15 @@ BIN_DIR = bin
 TARGET = $(BIN_DIR)/satori
 
 # Source files by module
-CORE_SRCS = $(SRC_DIR)/core/value.c $(SRC_DIR)/core/object.c $(SRC_DIR)/core/memory.c
+CORE_SRCS = $(SRC_DIR)/core/value.c $(SRC_DIR)/core/object.c $(SRC_DIR)/core/memory.c $(SRC_DIR)/core/table.c
 FRONTEND_SRCS = $(SRC_DIR)/frontend/lexer.c $(SRC_DIR)/frontend/parser.c $(SRC_DIR)/frontend/ast.c $(SRC_DIR)/frontend/typechecker.c
 BACKEND_SRCS = $(SRC_DIR)/backend/codegen.c
-RUNTIME_SRCS = $(SRC_DIR)/runtime/vm.c
+RUNTIME_SRCS = $(SRC_DIR)/runtime/vm.c $(SRC_DIR)/runtime/module.c
+STDLIB_SRCS = $(SRC_DIR)/stdlib/io.c $(SRC_DIR)/stdlib/string.c
 ERROR_SRCS = $(SRC_DIR)/error/error.c
 MAIN_SRC = $(SRC_DIR)/main.c
 
-SRCS = $(CORE_SRCS) $(FRONTEND_SRCS) $(BACKEND_SRCS) $(RUNTIME_SRCS) $(ERROR_SRCS) $(MAIN_SRC)
+SRCS = $(CORE_SRCS) $(FRONTEND_SRCS) $(BACKEND_SRCS) $(RUNTIME_SRCS) $(STDLIB_SRCS) $(ERROR_SRCS) $(MAIN_SRC)
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 
 DEBUG_FLAGS = -g -O0 -DDEBUG
@@ -33,7 +34,7 @@ release: CFLAGS = -Wall -Wextra -std=c99 -pedantic -Isrc $(RELEASE_FLAGS)
 release: clean $(TARGET)
 
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)/core $(BUILD_DIR)/frontend $(BUILD_DIR)/backend $(BUILD_DIR)/runtime $(BUILD_DIR)/error
+	mkdir -p $(BUILD_DIR)/core $(BUILD_DIR)/frontend $(BUILD_DIR)/backend $(BUILD_DIR)/runtime $(BUILD_DIR)/stdlib $(BUILD_DIR)/error
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)

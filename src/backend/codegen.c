@@ -3,6 +3,7 @@
 #include "backend/codegen.h"
 #include "error/error.h"
 #include <string.h>
+#include <stdio.h>
 
 typedef struct {
   Chunk *chunk;
@@ -31,21 +32,33 @@ static void compile_node(Compiler *c, AstNode *node);
 static void compile_call(Compiler *c, AstNode *node) {
   AstCall *call = &node->as.call;
 
-  // Check if this is io.println
+  // Handle module.function() calls
   if (call->callee->type == AST_MEMBER_ACCESS) {
     AstMemberAccess *member = &call->callee->as.member_access;
     if (member->object->type == AST_IDENTIFIER) {
       AstIdentifier *obj = &member->object->as.identifier;
-      if (strcmp(obj->name, "io") == 0 &&
-          strcmp(member->member, "println") == 0) {
-        // Compile arguments
-        for (int i = 0; i < call->arg_count; i++) {
-          compile_node(c, call->args[i]);
-        }
-        // Emit print instruction
-        emit_bytes(c, OP_PRINT, call->arg_count);
-        return;
+      
+      // Build the full function name: "module.function"
+      char full_name[256];
+      snprintf(full_name, sizeof(full_name), "%s.%s", obj->name, member->member);
+      
+      // Emit OP_GET_GLOBAL to get the native function
+      int name_idx = make_constant(c, value_make_string(full_name));
+      emit_bytes(c, OP_GET_GLOBAL, name_idx);
+      
+      // Compile arguments (push them on stack)
+      for (int i = 0; i < call->arg_count; i++) {
+        compile_node(c, call->args[i]);
       }
+      
+      // Emit OP_CALL_NATIVE with argument count
+      emit_bytes(c, OP_CALL_NATIVE, call->arg_count);
+      
+      // The result is now on the stack
+      // For expression statements, we need to pop it
+      // For now, we'll always pop (statements only)
+      emit_byte(c, OP_POP);
+      return;
     }
   }
 

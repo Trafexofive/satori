@@ -1,0 +1,176 @@
+// tests/native_functions.sat - Test native function calling conventions
+//
+// Tests the C<->Satori boundary:
+// - Argument passing
+// - Return values
+// - Type conversions
+// - Optional returns (nil handling)
+
+import io
+import math
+import os
+
+io.println "=== Native Function Calling Tests ==="
+io.println ""
+
+// ============================================================================
+// Test 1: No-arg functions
+// ============================================================================
+
+io.println "Test 1: No-arg functions"
+let timestamp := time.now()
+let args := os.args()
+io.println "  timestamp type: int (got value)"
+io.println "  args type: []string (got value)"
+
+// ============================================================================
+// Test 2: Single-arg functions
+// ============================================================================
+
+io.println ""
+io.println "Test 2: Single-arg functions"
+let sqrt_result := math.sqrt(16.0)
+io.println "  sqrt(16) = {}", sqrt_result
+
+let upper := string.to_upper("hello")
+io.println "  to_upper('hello') = {}", upper
+
+// ============================================================================
+// Test 3: Multi-arg functions
+// ============================================================================
+
+io.println ""
+io.println "Test 3: Multi-arg functions"
+let min_val := math.min(10.0, 5.0)
+io.println "  min(10, 5) = {}", min_val
+
+let split := string.split("a,b,c", ",")
+io.println "  split('a,b,c', ',') = {}", split
+
+// ============================================================================
+// Test 4: Variadic functions
+// ============================================================================
+
+io.println ""
+io.println "Test 4: Variadic functions"
+io.println "  println with 0 args"
+io.println "  println with 1 arg: {}", 42
+io.println "  println with 3 args: {} {} {}", 1, 2, 3
+
+// ============================================================================
+// Test 5: Return type conversions
+// ============================================================================
+
+io.println ""
+io.println "Test 5: Return types"
+
+// float return
+let float_val := math.sqrt(2.0)
+io.println "  float: sqrt(2) = {}", float_val
+
+// int return
+let int_val := time.now()
+io.println "  int: now() = {}", int_val
+
+// string return
+let str_val := string.to_upper("test")
+io.println "  string: to_upper('test') = {}", str_val
+
+// bool return
+let bool_val := string.starts_with("hello", "hel")
+io.println "  bool: starts_with('hello', 'hel') = {}", bool_val
+
+// array return
+let arr_val := string.split("x,y", ",")
+io.println "  array: split('x,y', ',') has {} elements", arr_val.len()
+
+// ============================================================================
+// Test 6: Optional returns (nullable)
+// ============================================================================
+
+io.println ""
+io.println "Test 6: Optional/nullable returns"
+
+// Should return nil
+let missing := os.getenv("DOES_NOT_EXIST_VAR")
+if missing
+    io.println "  ERROR: should be nil"
+else
+    io.println "  Correctly returned nil for missing env"
+
+// Should return value
+let home := os.getenv("HOME")
+if home
+    io.println "  Got HOME value: {}", home
+else
+    io.println "  ERROR: HOME should exist"
+
+// Use 'or' operator
+let default := os.getenv("MISSING") or "default_value"
+io.println "  Using 'or': {}", default
+
+// ============================================================================
+// Test 7: Error conditions
+// ============================================================================
+
+io.println ""
+io.println "Test 7: Error conditions"
+
+// Division by zero (future)
+// let div_zero := math.div(10, 0)  // Should return nil or panic
+
+// Invalid index (future)
+// let list := List[int]{}
+// let bad := list.get(100)  // Should return nil
+
+io.println "  Error handling tests (placeholder)"
+
+// ============================================================================
+// Test 8: Chaining module calls
+// ============================================================================
+
+io.println ""
+io.println "Test 8: Chaining calls"
+
+let original := "  HELLO WORLD  "
+let trimmed := string.trim(original)
+let lowered := string.to_lower(trimmed)
+io.println "  '{}' -> '{}'", original, lowered
+
+// Future: method chaining
+// let result := original.trim().to_lower()
+
+// ============================================================================
+// Test 9: Passing native function results to other natives
+// ============================================================================
+
+io.println ""
+io.println "Test 9: Composing native calls"
+
+// Get env var, split it, print parts
+let path := os.getenv("PATH") or "/usr/bin:/bin"
+let path_parts := string.split(path, ":")
+io.println "  PATH has {} entries", path_parts.len()
+io.println "  First entry: {}", path_parts.get(0)
+
+// Math composition
+let val := math.sqrt(math.abs(-16.0))
+io.println "  sqrt(abs(-16)) = {}", val
+
+// ============================================================================
+// Test 10: Module constants
+// ============================================================================
+
+io.println ""
+io.println "Test 10: Module constants"
+io.println "  math.PI = {}", math.PI
+io.println "  math.E = {}", math.E
+
+// ============================================================================
+// Summary
+// ============================================================================
+
+io.println ""
+io.println "==================================="
+io.println "Native function tests complete!"
+io.println "==================================="

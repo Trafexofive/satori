@@ -1,0 +1,216 @@
+// tests/stdlib_baseline.sat - Baseline test for stdlib module system
+//
+// This file tests the module import and native function calling mechanism.
+// It should exercise the core abstractions we're building.
+//
+// Tests:
+// 1. Module import syntax
+// 2. Multiple module imports
+// 3. Calling native functions from modules
+// 4. Module namespacing (io.println vs string.split)
+// 5. Different function signatures (variadic, fixed args, returns)
+
+// ============================================================================
+// Test 1: Basic io module - println and print
+// ============================================================================
+
+import io
+
+io.println "=== Test 1: Basic I/O ==="
+io.println "This tests io.println with a string"
+io.print "This is io.print without newline. "
+io.println "And this continues on same line."
+
+// ============================================================================
+// Test 2: Format strings with arguments
+// ============================================================================
+
+io.println ""
+io.println "=== Test 2: Format Strings ==="
+
+let name := "Satori"
+let version := 1
+let pi := 3.14159
+
+io.println "Language: {}", name
+io.println "Version: {}", version
+io.println "Pi: {}", pi
+io.println "Multiple: {} v{} has pi={}", name, version, pi
+
+// ============================================================================
+// Test 3: String module functions
+// ============================================================================
+
+import string
+
+io.println ""
+io.println "=== Test 3: String Module ==="
+
+let text := "hello,world,satori"
+let parts := string.split(text, ",")
+io.println "Split result: {}", parts
+
+let joined := string.join(parts, " | ")
+io.println "Joined: {}", joined
+
+let upper := string.to_upper("hello world")
+io.println "Upper: {}", upper
+
+let lower := string.to_lower("HELLO WORLD")
+io.println "Lower: {}", lower
+
+let trimmed := string.trim("  spaces  ")
+io.println "Trimmed: '{}'", trimmed
+
+// ============================================================================
+// Test 4: Math module functions
+// ============================================================================
+
+import math
+
+io.println ""
+io.println "=== Test 4: Math Module ==="
+
+io.println "sqrt(16) = {}", math.sqrt(16.0)
+io.println "sin(0) = {}", math.sin(0.0)
+io.println "cos(0) = {}", math.cos(0.0)
+io.println "abs(-42) = {}", math.abs(-42.0)
+io.println "min(5, 3) = {}", math.min(5.0, 3.0)
+io.println "max(5, 3) = {}", math.max(5.0, 3.0)
+io.println "PI = {}", math.PI
+io.println "E = {}", math.E
+
+// ============================================================================
+// Test 5: Collections module
+// ============================================================================
+
+import collections
+
+io.println ""
+io.println "=== Test 5: Collections Module ==="
+
+// List operations
+let list := List[int]{}
+list.push(10)
+list.push(20)
+list.push(30)
+io.println "List length: {}", list.len()
+io.println "List item at 1: {}", list.get(1)
+
+let popped := list.pop()
+io.println "Popped: {}", popped
+io.println "List length after pop: {}", list.len()
+
+// Map operations
+let map := Map[string, int]{}
+map.set("one", 1)
+map.set("two", 2)
+map.set("three", 3)
+
+io.println "Map size: {}", map.len()
+io.println "map['two'] = {}", map.get("two")
+io.println "Has 'three': {}", map.has("three")
+io.println "Has 'four': {}", map.has("four")
+
+// ============================================================================
+// Test 6: OS module
+// ============================================================================
+
+import os
+
+io.println ""
+io.println "=== Test 6: OS Module ==="
+
+let home := os.getenv("HOME") or "/tmp"
+io.println "HOME: {}", home
+
+let args := os.args()
+io.println "Program arguments: {}", args
+
+// ============================================================================
+// Test 7: Time module
+// ============================================================================
+
+import time
+
+io.println ""
+io.println "=== Test 7: Time Module ==="
+
+let now := time.now()
+io.println "Current timestamp: {}", now
+
+let start := time.clock_ms()
+// Simulate some work
+let x := 0
+let i := 0
+loop
+    if i >= 1000 then break
+    x := x + i
+    i := i + 1
+
+let elapsed := time.clock_ms() - start
+io.println "Elapsed time: {} ms", elapsed
+
+// ============================================================================
+// Test 8: Module-specific error handling
+// ============================================================================
+
+io.println ""
+io.println "=== Test 8: Error Handling with Modules ==="
+
+// Test optional return values
+let missing := os.getenv("NONEXISTENT_VAR_12345")
+if missing
+    io.println "Unexpected: found nonexistent var"
+else
+    io.println "Correctly returned nil for missing env var"
+
+// Test with 'or' operator
+let config_path := os.getenv("CONFIG") or "/etc/default.conf"
+io.println "Config path: {}", config_path
+
+// ============================================================================
+// Test 9: Multiple imports in different order
+// ============================================================================
+
+io.println ""
+io.println "=== Test 9: Import Order Independence ==="
+
+// These were already imported above, should be no-op
+import io
+import math
+import string
+
+io.println "Re-importing modules works (should be cached)"
+io.println "sqrt(4) still works: {}", math.sqrt(4.0)
+
+// ============================================================================
+// Test 10: Cross-module functionality
+// ============================================================================
+
+io.println ""
+io.println "=== Test 10: Cross-Module Integration ==="
+
+// Use multiple modules together
+let data := "1.5,2.5,3.5"
+let number_strings := string.split(data, ",")
+
+io.println "Computing on parsed data:"
+let sum := 0.0
+for num_str in number_strings
+    // In future: let num := float.parse(num_str)
+    io.print "  "
+    io.println num_str
+
+// Use time and io together
+io.print "Current time is: "
+io.println time.now()
+
+// ============================================================================
+// Summary
+// ============================================================================
+
+io.println ""
+io.println "==================================="
+io.println "All stdlib baseline tests passed!"
+io.println "==================================="

@@ -1,0 +1,42 @@
+// tests/module_minimal.sat - Minimal module system test
+//
+// This is the absolute minimum needed to test the module/stdlib abstraction.
+// Focus: import mechanism, native function registration, namespacing
+//
+// If this works, the module system is working.
+
+import io
+
+// Test 1: Basic function call from module
+io.println "Test 1: Basic module function works"
+
+// Test 2: Multiple calls from same module
+io.print "Test 2a: print without newline "
+io.println "Test 2b: println continues"
+
+// Test 3: Format string with single argument
+let name := "Satori"
+io.println "Test 3: Hello, {}!", name
+
+// Test 4: Format string with multiple arguments
+let x := 42
+let y := 3.14
+io.println "Test 4: x={}, y={}", x, y
+
+// Test 5: Import second module
+import string
+
+let text := "hello world"
+let upper := string.to_upper(text)
+io.println "Test 5: {} -> {}", text, upper
+
+// Test 6: Re-import should be no-op (lazy loading test)
+import io
+io.println "Test 6: Re-import successful"
+
+// Test 7: Use both modules
+let lower := string.to_lower("GOODBYE")
+io.println "Test 7: {}", lower
+
+io.println ""
+io.println "All minimal tests passed!"

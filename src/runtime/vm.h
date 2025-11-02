@@ -5,16 +5,18 @@
 
 #include "core/common.h"
 #include "core/value.h"
+#include "core/table.h"
 
 typedef enum {
-  OP_CONSTANT,   // Load constant
-  OP_POP,        // Pop from stack
-  OP_CALL,       // Call function
-  OP_IMPORT,     // Import module
-  OP_GET_MEMBER, // Get member from object
-  OP_PRINT,      // Built-in print
-  OP_RETURN,     // Return from function
-  OP_HALT,       // Stop execution
+  OP_CONSTANT,      // Load constant
+  OP_POP,           // Pop from stack
+  OP_GET_GLOBAL,    // Get global variable/function
+  OP_CALL_NATIVE,   // Call native function
+  OP_IMPORT,        // Import module
+  OP_GET_MEMBER,    // Get member from object
+  OP_PRINT,         // Built-in print (deprecated, use io.println)
+  OP_RETURN,        // Return from function
+  OP_HALT,          // Stop execution
 } OpCode;
 
 typedef struct {
@@ -26,11 +28,15 @@ typedef struct {
   int constant_capacity;
 } Chunk;
 
-typedef struct {
+typedef struct VM {
   Chunk chunk;
-  u8 *ip; // Instruction pointer
+  u8 *ip;                          // Instruction pointer
   Value stack[SATORI_STACK_MAX];
   int stack_top;
+  
+  // Module system
+  Table globals;                   // Global functions and variables
+  Table loaded_modules;            // Tracking loaded modules
 } VM;
 
 // Chunk operations
