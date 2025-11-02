@@ -38,3 +38,4 @@ local.conf
 # Benchmarks data
 benchmarks/*/results/
 benchmarks/*/data/
+INITIAL_RELEASE.md
