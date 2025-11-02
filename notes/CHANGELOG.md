@@ -94,7 +94,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial repository setup
 - Project vision and philosophy
 - Basic directory structure
-- License (GPL v3)
+- License (MIT)
 - README with language overview
 
 ---

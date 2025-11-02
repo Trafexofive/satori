@@ -4,7 +4,7 @@
 
 Satori combines the safety of static typing with the ergonomics of scripting languages. Built in C, designed for clarity, made for your own infrastructure.
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 [![Version](https://img.shields.io/badge/version-0.1.0--alpha-orange.svg)]()
 
@@ -384,7 +384,7 @@ make check-deps  # Verify no circular dependencies
 
 ## License
 
-GPL v3 - See [LICENSE](LICENSE) file
+MIT - See [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
