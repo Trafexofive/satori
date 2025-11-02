@@ -34,6 +34,11 @@ typedef enum {
   OP_GREATER_EQUAL, // >=
   OP_NOT,           // unary !
   
+  // Control flow
+  OP_JUMP,          // Unconditional jump
+  OP_JUMP_IF_FALSE, // Jump if top of stack is false
+  OP_LOOP,          // Jump backwards (for loops)
+  
   OP_PRINT,         // Built-in print (deprecated, use io.println)
   OP_RETURN,        // Return from function
   OP_HALT,          // Stop execution

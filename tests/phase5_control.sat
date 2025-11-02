@@ -1,0 +1,36 @@
+import io
+
+io.println "=== Phase 5: Control Flow ==="
+io.println ""
+
+// Test if/else
+io.println "Test 1: If/Else"
+let x := 10
+
+if x > 5 then
+    io.println "x ({}) is greater than 5", x
+
+if x < 5 then
+    io.println "This should not print"
+else
+    io.println "x ({}) is not less than 5", x
+
+io.println ""
+io.println "Test 2: Nested If"
+if x > 0 then
+    if x > 5 then
+        io.println "x is positive and greater than 5"
+
+io.println ""
+io.println "Test 3: Comparison in if"
+if 10 == 10 then
+    io.println "10 equals 10"
+
+if 5 != 10 then
+    io.println "5 does not equal 10"
+
+io.println ""
+io.println "========================================"
+io.println "Phase 5 Control Flow (if/else) works!"
+io.println "Note: while/loop need assignment first"
+io.println "========================================"

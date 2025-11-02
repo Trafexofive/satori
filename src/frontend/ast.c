@@ -36,6 +36,16 @@ AstNode *ast_make_let(char *name, AstNode *value, int line, int column) {
   return node;
 }
 
+AstNode *ast_make_assignment(char *name, AstNode *value, int line, int column) {
+  AstNode *node = malloc(sizeof(AstNode));
+  node->type = AST_ASSIGNMENT;
+  node->line = line;
+  node->column = column;
+  node->as.assignment.name = strdup(name);
+  node->as.assignment.value = value;
+  return node;
+}
+
 AstNode *ast_make_binary_op(BinaryOperator op, AstNode *left, AstNode *right, int line, int column) {
   AstNode *node = malloc(sizeof(AstNode));
   node->type = AST_BINARY_OP;
@@ -55,6 +65,74 @@ AstNode *ast_make_unary_op(UnaryOperator op, AstNode *operand, int line, int col
   node->as.unary_op.op = op;
   node->as.unary_op.operand = operand;
   return node;
+}
+
+AstNode *ast_make_if(AstNode *condition, AstNode *then_branch, AstNode *else_branch, int line, int column) {
+  AstNode *node = malloc(sizeof(AstNode));
+  node->type = AST_IF;
+  node->line = line;
+  node->column = column;
+  node->as.if_stmt.condition = condition;
+  node->as.if_stmt.then_branch = then_branch;
+  node->as.if_stmt.else_branch = else_branch;
+  return node;
+}
+
+AstNode *ast_make_while(AstNode *condition, AstNode *body, int line, int column) {
+  AstNode *node = malloc(sizeof(AstNode));
+  node->type = AST_WHILE;
+  node->line = line;
+  node->column = column;
+  node->as.while_loop.condition = condition;
+  node->as.while_loop.body = body;
+  return node;
+}
+
+AstNode *ast_make_loop(AstNode *body, int line, int column) {
+  AstNode *node = malloc(sizeof(AstNode));
+  node->type = AST_LOOP;
+  node->line = line;
+  node->column = column;
+  node->as.loop.body = body;
+  return node;
+}
+
+AstNode *ast_make_break(int line, int column) {
+  AstNode *node = malloc(sizeof(AstNode));
+  node->type = AST_BREAK;
+  node->line = line;
+  node->column = column;
+  return node;
+}
+
+AstNode *ast_make_continue(int line, int column) {
+  AstNode *node = malloc(sizeof(AstNode));
+  node->type = AST_CONTINUE;
+  node->line = line;
+  node->column = column;
+  return node;
+}
+
+AstNode *ast_make_block(int line, int column) {
+  AstNode *node = malloc(sizeof(AstNode));
+  node->type = AST_BLOCK;
+  node->line = line;
+  node->column = column;
+  node->as.block.statements = NULL;
+  node->as.block.statement_count = 0;
+  node->as.block.capacity = 0;
+  return node;
+}
+
+void ast_block_add_statement(AstNode *block, AstNode *statement) {
+  if (block->as.block.capacity < block->as.block.statement_count + 1) {
+    int old_capacity = block->as.block.capacity;
+    block->as.block.capacity = old_capacity < 8 ? 8 : old_capacity * 2;
+    block->as.block.statements = realloc(
+        block->as.block.statements,
+        sizeof(AstNode *) * block->as.block.capacity);
+  }
+  block->as.block.statements[block->as.block.statement_count++] = statement;
 }
 
 AstNode *ast_make_call(AstNode *callee, AstNode **args, int arg_count, int line,
@@ -145,12 +223,40 @@ void ast_free(AstNode *node) {
     free(node->as.let.name);
     ast_free(node->as.let.value);
     break;
+  case AST_ASSIGNMENT:
+    free(node->as.assignment.name);
+    ast_free(node->as.assignment.value);
+    break;
   case AST_BINARY_OP:
     ast_free(node->as.binary_op.left);
     ast_free(node->as.binary_op.right);
     break;
   case AST_UNARY_OP:
     ast_free(node->as.unary_op.operand);
+    break;
+  case AST_IF:
+    ast_free(node->as.if_stmt.condition);
+    ast_free(node->as.if_stmt.then_branch);
+    if (node->as.if_stmt.else_branch) {
+      ast_free(node->as.if_stmt.else_branch);
+    }
+    break;
+  case AST_WHILE:
+    ast_free(node->as.while_loop.condition);
+    ast_free(node->as.while_loop.body);
+    break;
+  case AST_LOOP:
+    ast_free(node->as.loop.body);
+    break;
+  case AST_BREAK:
+  case AST_CONTINUE:
+    // No children to free
+    break;
+  case AST_BLOCK:
+    for (int i = 0; i < node->as.block.statement_count; i++) {
+      ast_free(node->as.block.statements[i]);
+    }
+    free(node->as.block.statements);
     break;
   case AST_CALL:
     ast_free(node->as.call.callee);
@@ -197,6 +303,10 @@ void ast_print(AstNode *node, int indent) {
     printf("Let: %s :=\n", node->as.let.name);
     ast_print(node->as.let.value, indent + 1);
     break;
+  case AST_ASSIGNMENT:
+    printf("Assignment: %s =\n", node->as.assignment.name);
+    ast_print(node->as.assignment.value, indent + 1);
+    break;
   case AST_BINARY_OP: {
     const char *op_str[] = {"+", "-", "*", "/", "%", "==", "!=", "<", "<=", ">", ">="};
     printf("BinaryOp: %s\n", op_str[node->as.binary_op.op]);
@@ -210,6 +320,45 @@ void ast_print(AstNode *node, int indent) {
     ast_print(node->as.unary_op.operand, indent + 1);
     break;
   }
+  case AST_IF:
+    printf("If\n");
+    for (int i = 0; i < indent + 1; i++) printf("  ");
+    printf("Condition:\n");
+    ast_print(node->as.if_stmt.condition, indent + 2);
+    for (int i = 0; i < indent + 1; i++) printf("  ");
+    printf("Then:\n");
+    ast_print(node->as.if_stmt.then_branch, indent + 2);
+    if (node->as.if_stmt.else_branch) {
+      for (int i = 0; i < indent + 1; i++) printf("  ");
+      printf("Else:\n");
+      ast_print(node->as.if_stmt.else_branch, indent + 2);
+    }
+    break;
+  case AST_WHILE:
+    printf("While\n");
+    for (int i = 0; i < indent + 1; i++) printf("  ");
+    printf("Condition:\n");
+    ast_print(node->as.while_loop.condition, indent + 2);
+    for (int i = 0; i < indent + 1; i++) printf("  ");
+    printf("Body:\n");
+    ast_print(node->as.while_loop.body, indent + 2);
+    break;
+  case AST_LOOP:
+    printf("Loop\n");
+    ast_print(node->as.loop.body, indent + 1);
+    break;
+  case AST_BREAK:
+    printf("Break\n");
+    break;
+  case AST_CONTINUE:
+    printf("Continue\n");
+    break;
+  case AST_BLOCK:
+    printf("Block\n");
+    for (int i = 0; i < node->as.block.statement_count; i++) {
+      ast_print(node->as.block.statements[i], indent + 1);
+    }
+    break;
   case AST_CALL:
     printf("Call\n");
     ast_print(node->as.call.callee, indent + 1);
@@ -232,9 +381,6 @@ void ast_print(AstNode *node, int indent) {
     break;
   case AST_FLOAT_LITERAL:
     printf("Float: %f\n", node->as.float_literal.value);
-    break;
-  case AST_ASSIGNMENT:
-    // Not yet implemented
     break;
   }
 }

@@ -30,6 +30,41 @@ static void emit_bytes(Compiler *c, u8 byte1, u8 byte2) {
   emit_byte(c, byte2);
 }
 
+static int emit_jump(Compiler *c, u8 instruction) {
+  emit_byte(c, instruction);
+  emit_byte(c, 0xff);  // Placeholder
+  emit_byte(c, 0xff);  // Placeholder
+  return c->chunk->count - 2;  // Return offset of jump address
+}
+
+static void patch_jump(Compiler *c, int offset) {
+  // -2 to adjust for the jump offset itself
+  int jump = c->chunk->count - offset - 2;
+  
+  if (jump > 0xffff) {
+    error_report_simple("Too much code to jump over");
+    c->had_error = true;
+    return;
+  }
+  
+  c->chunk->code[offset] = (jump >> 8) & 0xff;
+  c->chunk->code[offset + 1] = jump & 0xff;
+}
+
+static void emit_loop(Compiler *c, int loop_start) {
+  emit_byte(c, OP_LOOP);
+  
+  int offset = c->chunk->count - loop_start + 2;
+  if (offset > 0xffff) {
+    error_report_simple("Loop body too large");
+    c->had_error = true;
+    return;
+  }
+  
+  emit_byte(c, (offset >> 8) & 0xff);
+  emit_byte(c, offset & 0xff);
+}
+
 static int make_constant(Compiler *c, Value value) {
   int constant = chunk_add_constant(c->chunk, value);
   if (constant > 255) {
@@ -135,6 +170,19 @@ static void compile_node(Compiler *c, AstNode *node) {
     break;
   }
   
+  case AST_ASSIGNMENT: {
+    // name = value
+    compile_node(c, node->as.assignment.value);
+    int slot = resolve_local(c, node->as.assignment.name);
+    if (slot >= 0) {
+      emit_bytes(c, OP_SET_LOCAL, slot);
+    } else {
+      error_report_simple("Undefined variable in assignment");
+      c->had_error = true;
+    }
+    break;
+  }
+  
   case AST_IDENTIFIER: {
     // Look up the identifier as a local variable
     int slot = resolve_local(c, node->as.identifier.name);
@@ -182,6 +230,86 @@ static void compile_node(Compiler *c, AstNode *node) {
     }
     break;
   }
+  
+  case AST_IF: {
+    // Compile condition
+    compile_node(c, node->as.if_stmt.condition);
+    
+    // Jump to else branch if condition is false
+    int else_jump = emit_jump(c, OP_JUMP_IF_FALSE);
+    emit_byte(c, OP_POP);  // Pop condition
+    
+    // Compile then branch
+    compile_node(c, node->as.if_stmt.then_branch);
+    
+    // Jump over else branch
+    int end_jump = emit_jump(c, OP_JUMP);
+    
+    // Patch else jump
+    patch_jump(c, else_jump);
+    emit_byte(c, OP_POP);  // Pop condition
+    
+    // Compile else branch if it exists
+    if (node->as.if_stmt.else_branch) {
+      compile_node(c, node->as.if_stmt.else_branch);
+    }
+    
+    // Patch end jump
+    patch_jump(c, end_jump);
+    break;
+  }
+  
+  case AST_WHILE: {
+    int loop_start = c->chunk->count;
+    
+    // Compile condition
+    compile_node(c, node->as.while_loop.condition);
+    
+    // Jump out of loop if condition is false
+    int exit_jump = emit_jump(c, OP_JUMP_IF_FALSE);
+    emit_byte(c, OP_POP);  // Pop condition
+    
+    // Compile body
+    compile_node(c, node->as.while_loop.body);
+    
+    // Loop back to start
+    emit_loop(c, loop_start);
+    
+    // Patch exit jump
+    patch_jump(c, exit_jump);
+    emit_byte(c, OP_POP);  // Pop condition
+    break;
+  }
+  
+  case AST_LOOP: {
+    int loop_start = c->chunk->count;
+    
+    // Compile body
+    compile_node(c, node->as.loop.body);
+    
+    // Loop back to start
+    emit_loop(c, loop_start);
+    break;
+  }
+  
+  case AST_BREAK:
+    // For now, break is not implemented (needs loop context tracking)
+    error_report_simple("break not yet implemented");
+    c->had_error = true;
+    break;
+  
+  case AST_CONTINUE:
+    // For now, continue is not implemented (needs loop context tracking)
+    error_report_simple("continue not yet implemented");
+    c->had_error = true;
+    break;
+  
+  case AST_BLOCK: {
+    for (int i = 0; i < node->as.block.statement_count; i++) {
+      compile_node(c, node->as.block.statements[i]);
+    }
+    break;
+  }
 
   case AST_CALL: {
     compile_call(c, node);
@@ -213,13 +341,6 @@ static void compile_node(Compiler *c, AstNode *node) {
     int constant =
         make_constant(c, value_make_float(node->as.float_literal.value));
     emit_bytes(c, OP_CONSTANT, constant);
-    break;
-  }
-  
-  case AST_ASSIGNMENT: {
-    // Not yet implemented
-    error_report_simple("Assignment not yet implemented");
-    c->had_error = true;
     break;
   }
 

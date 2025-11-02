@@ -259,6 +259,58 @@ static AstNode *parse_statement(Parser *p) {
     free(name);
     return node;
   }
+  
+  if (match(p, TOKEN_IF)) {
+    // if condition then statement [else statement]
+    int line = p->previous.line;
+    int column = p->previous.column;
+    
+    AstNode *condition = parse_expression(p);
+    consume(p, TOKEN_THEN, "expected 'then' after if condition");
+    skip_newlines(p);
+    
+    AstNode *then_branch = parse_statement(p);
+    AstNode *else_branch = NULL;
+    
+    skip_newlines(p);
+    if (match(p, TOKEN_ELSE)) {
+      skip_newlines(p);
+      else_branch = parse_statement(p);
+    }
+    
+    return ast_make_if(condition, then_branch, else_branch, line, column);
+  }
+  
+  if (match(p, TOKEN_WHILE)) {
+    // while condition then statement
+    int line = p->previous.line;
+    int column = p->previous.column;
+    
+    AstNode *condition = parse_expression(p);
+    consume(p, TOKEN_THEN, "expected 'then' after while condition");
+    skip_newlines(p);
+    
+    AstNode *body = parse_statement(p);
+    return ast_make_while(condition, body, line, column);
+  }
+  
+  if (match(p, TOKEN_LOOP)) {
+    // loop statement
+    int line = p->previous.line;
+    int column = p->previous.column;
+    skip_newlines(p);
+    
+    AstNode *body = parse_statement(p);
+    return ast_make_loop(body, line, column);
+  }
+  
+  if (match(p, TOKEN_BREAK)) {
+    return ast_make_break(p->previous.line, p->previous.column);
+  }
+  
+  if (match(p, TOKEN_CONTINUE)) {
+    return ast_make_continue(p->previous.line, p->previous.column);
+  }
 
   // Expression statement
   return parse_expression(p);

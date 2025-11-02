@@ -13,6 +13,12 @@ typedef enum {
   AST_ASSIGNMENT,    // Variable assignment (for future)
   AST_BINARY_OP,     // Binary operation (a + b, a * b, etc.)
   AST_UNARY_OP,      // Unary operation (-x, !x)
+  AST_IF,            // If statement
+  AST_WHILE,         // While loop
+  AST_LOOP,          // Infinite loop
+  AST_BREAK,         // Break statement
+  AST_CONTINUE,      // Continue statement
+  AST_BLOCK,         // Block of statements
   AST_CALL,
   AST_MEMBER_ACCESS,
   AST_IDENTIFIER,
@@ -67,6 +73,11 @@ typedef struct {
 } AstLet;
 
 typedef struct {
+  char *name;        // Variable name
+  AstNode *value;    // New value expression
+} AstAssignment;
+
+typedef struct {
   BinaryOperator op;
   AstNode *left;
   AstNode *right;
@@ -76,6 +87,27 @@ typedef struct {
   UnaryOperator op;
   AstNode *operand;
 } AstUnaryOp;
+
+typedef struct {
+  AstNode *condition;
+  AstNode *then_branch;
+  AstNode *else_branch;  // NULL if no else
+} AstIf;
+
+typedef struct {
+  AstNode *condition;
+  AstNode *body;
+} AstWhile;
+
+typedef struct {
+  AstNode *body;
+} AstLoop;
+
+typedef struct {
+  AstNode **statements;
+  int statement_count;
+  int capacity;
+} AstBlock;
 
 typedef struct {
   char *value;
@@ -103,8 +135,13 @@ struct AstNode {
     AstProgram program;
     AstImport import;
     AstLet let;
+    AstAssignment assignment;
     AstBinaryOp binary_op;
     AstUnaryOp unary_op;
+    AstIf if_stmt;
+    AstWhile while_loop;
+    AstLoop loop;
+    AstBlock block;
     AstCall call;
     AstMemberAccess member_access;
     AstIdentifier identifier;
@@ -118,8 +155,16 @@ struct AstNode {
 AstNode *ast_make_program(void);
 AstNode *ast_make_import(char *module_name, int line, int column);
 AstNode *ast_make_let(char *name, AstNode *value, int line, int column);
+AstNode *ast_make_assignment(char *name, AstNode *value, int line, int column);
 AstNode *ast_make_binary_op(BinaryOperator op, AstNode *left, AstNode *right, int line, int column);
 AstNode *ast_make_unary_op(UnaryOperator op, AstNode *operand, int line, int column);
+AstNode *ast_make_if(AstNode *condition, AstNode *then_branch, AstNode *else_branch, int line, int column);
+AstNode *ast_make_while(AstNode *condition, AstNode *body, int line, int column);
+AstNode *ast_make_loop(AstNode *body, int line, int column);
+AstNode *ast_make_break(int line, int column);
+AstNode *ast_make_continue(int line, int column);
+AstNode *ast_make_block(int line, int column);
+void ast_block_add_statement(AstNode *block, AstNode *statement);
 AstNode *ast_make_call(AstNode *callee, AstNode **args, int arg_count, int line,
                        int column);
 AstNode *ast_make_member_access(AstNode *object, char *member, int line,

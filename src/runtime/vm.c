@@ -100,6 +100,7 @@ bool vm_run(VM *vm) {
 #define READ_BYTE() (*vm->ip++)
 #define READ_CONSTANT() (vm->chunk.constants[READ_BYTE()])
 #define READ_STRING() AS_STRING(READ_CONSTANT())
+#define READ_SHORT() (vm->ip += 2, (u16)((vm->ip[-2] << 8) | vm->ip[-1]))
 
   for (;;) {
 #ifdef SATORI_DEBUG_TRACE_EXECUTION
@@ -331,6 +332,30 @@ bool vm_run(VM *vm) {
       // In Satori, only false and nil are falsy
       bool is_truthy = !(IS_NIL(a) || (IS_BOOL(a) && !AS_BOOL(a)));
       stack_push(vm, value_make_bool(!is_truthy));
+      break;
+    }
+    
+    // Control flow
+    case OP_JUMP: {
+      u16 offset = READ_SHORT();
+      vm->ip += offset;
+      break;
+    }
+    
+    case OP_JUMP_IF_FALSE: {
+      u16 offset = READ_SHORT();
+      Value condition = stack_peek(vm, 0);
+      // Check if falsy (nil or false)
+      bool is_falsy = IS_NIL(condition) || (IS_BOOL(condition) && !AS_BOOL(condition));
+      if (is_falsy) {
+        vm->ip += offset;
+      }
+      break;
+    }
+    
+    case OP_LOOP: {
+      u16 offset = READ_SHORT();
+      vm->ip -= offset;
       break;
     }
 
