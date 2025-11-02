@@ -1,0 +1,25 @@
+// examples/functions.sat - Function declarations
+
+import io
+
+// Simple function
+void greet(string name)
+    io.println "Hello, {}", name
+
+// Function with return value
+int add(int a, int b)
+    return a + b
+
+int factorial(int n)
+    if n <= 1
+        return 1
+    return n * factorial(n - 1)
+
+// Main execution
+greet("Satori")
+
+let sum := add(10, 20)
+io.println "10 + 20 = {}", sum
+
+let fact := factorial(5)
+io.println "5! = {}", fact

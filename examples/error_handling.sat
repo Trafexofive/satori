@@ -1,0 +1,37 @@
+// examples/error_handling.sat - Error handling with 'or' operator
+
+import io
+import fs
+
+// Provide default value
+let port := parse_int(env("PORT")) or 8080
+io.println "Using port: {}", port
+
+// Early return on error
+void process_file(string path)
+    let file := fs.open(path, "r") or return
+    defer file.close()
+    
+    let content := file.read_all() or return
+    io.println "File content: {}", content
+
+// Panic on critical error
+void critical_operation()
+    let config := fs.open("config.yaml", "r") or 
+        panic("Critical: config.yaml not found")
+    defer config.close()
+    
+    // Process config...
+
+// Chain operations
+void chain_example()
+    let data := fs.open("data.txt", "r") or return
+    defer data.close()
+    
+    let content := data.read_all() or return
+    let parsed := parse_json(content) or return
+    let value := parsed.get("key") or default_value()
+    
+    io.println "Value: {}", value
+
+io.println "Error handling examples"

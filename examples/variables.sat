@@ -1,0 +1,23 @@
+// examples/variables.sat - Variable declaration and types
+
+import io
+
+// Type inference
+let x := 42
+let y := 3.14
+let name := "Satori"
+let active := true
+
+// Explicit types
+let count: int = 100
+let ratio: float = 0.85
+let msg: string = "Hello, World!"
+
+// Multiple declarations
+let a, b, c := 1, 2, 3
+
+io.println "Integer: {}", x
+io.println "Float: {}", y
+io.println "String: {}", name
+io.println "Boolean: {}", active
+io.println "Sum: {}", a + b + c

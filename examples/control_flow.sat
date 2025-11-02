@@ -1,0 +1,35 @@
+// examples/control_flow.sat - Control flow structures
+
+import io
+
+// If/else
+let x := 42
+if x > 50
+    io.println "x is large"
+else if x > 25
+    io.println "x is medium"
+else
+    io.println "x is small"
+
+// Expression-based if
+let status := if x > 30 then "high" else "low"
+io.println "Status: {}", status
+
+// For loop
+io.println "Counting:"
+for i in 0..5
+    io.println "  {}", i
+
+// While loop
+let count := 0
+while count < 3
+    io.println "Count: {}", count
+    count = count + 1
+
+// Infinite loop with break
+let n := 0
+loop
+    if n >= 5
+        break
+    io.println "Loop iteration: {}", n
+    n = n + 1

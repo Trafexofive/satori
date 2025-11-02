@@ -1,0 +1,5 @@
+// examples/hello.sat - The essential greeting
+
+import io
+
+io.println "Hello, World!"

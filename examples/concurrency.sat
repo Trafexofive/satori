@@ -1,0 +1,32 @@
+// examples/concurrency.sat - Lightweight concurrency
+
+import io
+import time
+
+void worker(int id, int iterations)
+    for i in 0..iterations
+        io.println "Worker {} - iteration {}", id, i
+        time.sleep(100)  // 100ms
+
+void producer(Channel[int] ch)
+    for i in 0..10
+        ch.send(i)
+        io.println "Produced: {}", i
+    ch.close()
+
+void consumer(Channel[int] ch)
+    loop
+        let value := ch.recv() or break
+        io.println "Consumed: {}", value
+
+// Spawn multiple tasks
+spawn worker(1, 5)
+spawn worker(2, 5)
+spawn worker(3, 5)
+
+// Channel-based communication
+let ch := make_channel[int]()
+spawn producer(ch)
+spawn consumer(ch)
+
+io.println "All tasks spawned"

@@ -1,0 +1,43 @@
+// examples/structs.sat - Struct definitions and methods
+
+import io
+
+struct Point {
+    int x
+    int y
+    
+    void print()
+        io.println "Point({}, {})", x, y
+    
+    int distance_from_origin()
+        return x * x + y * y  // Simplified
+}
+
+struct Rectangle {
+    int width
+    int height
+    
+    int area()
+        return width * height
+    
+    int perimeter()
+        return 2 * (width + height)
+    
+    void scale(int factor)
+        width = width * factor
+        height = height * factor
+}
+
+// Create and use structs
+let p := Point{10, 20}
+p.print()
+
+let dist := p.distance_from_origin()
+io.println "Distance squared: {}", dist
+
+let rect := Rectangle{5, 10}
+io.println "Area: {}", rect.area()
+io.println "Perimeter: {}", rect.perimeter()
+
+rect.scale(2)
+io.println "After scaling - Area: {}", rect.area()

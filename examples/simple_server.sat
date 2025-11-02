@@ -1,0 +1,32 @@
+// examples/simple_server.sat - Simple HTTP echo server
+
+import io
+import net
+
+void handle_client(net.Socket client)
+    defer client.close()
+    
+    // Read request
+    let request := client.read(4096) or return
+    io.println "Received: {}", string.from_bytes(request)
+    
+    // Send response
+    let response := "HTTP/1.0 200 OK\r\n"
+    response = response + "Content-Type: text/plain\r\n\r\n"
+    response = response + "Hello from Satori!\n"
+    
+    client.write(response.bytes()) or return
+
+void main()
+    let listener := net.listen("0.0.0.0", 8080) or 
+        panic("Cannot bind to port 8080")
+    defer listener.close()
+    
+    io.println "Server listening on :8080"
+    io.println "Try: curl http://localhost:8080"
+    
+    loop
+        let client := listener.accept() or continue
+        spawn handle_client(client)
+
+main()

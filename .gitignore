@@ -1,0 +1,40 @@
+# Build artifacts
+build/
+bin/
+*.o
+*.a
+*.so
+*.dylib
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+*.test
+*.out
+
+# Temporary files
+*.tmp
+*.log
+.cache/
+
+# Generated documentation
+*.html
+*.pdf
+
+# Local configuration
+.env
+local.conf
+
+# Benchmarks data
+benchmarks/*/results/
+benchmarks/*/data/

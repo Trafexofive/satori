@@ -1,0 +1,46 @@
+// examples/file_io.sat - File I/O operations
+
+import io
+import fs
+
+// Read entire file
+void read_example()
+    let file := fs.open("data.txt", "r") or return
+    defer file.close()
+    
+    let content := file.read_all() or return
+    io.println "File content:\n{}", content
+
+// Write to file
+void write_example()
+    let file := fs.open("output.txt", "w") or return
+    defer file.close()
+    
+    file.write("Line 1\n") or return
+    file.write("Line 2\n") or return
+    file.write("Line 3\n") or return
+    
+    io.println "Wrote to output.txt"
+
+// Line-by-line processing
+void process_lines()
+    let file := fs.open("data.txt", "r") or return
+    defer file.close()
+    
+    let line_num := 1
+    loop
+        let line := file.read_line() or break
+        io.println "{}: {}", line_num, line
+        line_num = line_num + 1
+
+// Directory operations
+void dir_example()
+    let files := fs.list_dir(".") or return
+    
+    io.println "Files in current directory:"
+    for file in files
+        let info := fs.stat(file) or continue
+        let kind := if info.is_dir then "DIR" else "FILE"
+        io.println "  {} - {} ({} bytes)", kind, file, info.size
+
+io.println "File I/O examples"
