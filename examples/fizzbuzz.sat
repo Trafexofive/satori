@@ -1,0 +1,93 @@
+// examples/fizzbuzz.sat - Classic FizzBuzz
+//
+// Prints numbers 1-20, but:
+// - "Fizz" for multiples of 3
+// - "Buzz" for multiples of 5  
+// - "FizzBuzz" for multiples of both
+
+import io
+
+io.println "=== FizzBuzz ==="
+io.println ""
+
+// Since we don't have loops with counters yet, we'll do it manually
+// This demonstrates what we CAN do with current features
+
+let n := 1
+if n % 3 == 0 then
+    if n % 5 == 0 then
+        io.println "FizzBuzz"
+    else
+        io.println "Fizz"
+else
+    if n % 5 == 0 then
+        io.println "Buzz"
+    else
+        io.println n
+
+let n2 := 2
+if n2 % 3 == 0 then
+    if n2 % 5 == 0 then
+        io.println "FizzBuzz"
+    else
+        io.println "Fizz"
+else
+    if n2 % 5 == 0 then
+        io.println "Buzz"
+    else
+        io.println n2
+
+let n3 := 3
+if n3 % 3 == 0 then
+    io.println "Fizz"
+else
+    io.println n3
+
+let n4 := 4
+io.println n4
+
+let n5 := 5
+if n5 % 5 == 0 then
+    io.println "Buzz"
+else
+    io.println n5
+
+let n6 := 6
+if n6 % 3 == 0 then
+    io.println "Fizz"
+else
+    io.println n6
+
+let n7 := 7
+io.println n7
+
+let n8 := 8
+io.println n8
+
+let n9 := 9
+if n9 % 3 == 0 then
+    io.println "Fizz"
+else
+    io.println n9
+
+let n10 := 10
+if n10 % 5 == 0 then
+    io.println "Buzz"
+else
+    io.println n10
+
+let n15 := 15
+if n15 % 3 == 0 then
+    if n15 % 5 == 0 then
+        io.println "FizzBuzz"
+    else
+        io.println "Fizz"
+else
+    if n15 % 5 == 0 then
+        io.println "Buzz"
+    else
+        io.println n15
+
+io.println ""
+io.println "FizzBuzz demo complete!"
+io.println "Note: With loops, this would be much cleaner!"

@@ -1,0 +1,93 @@
+// examples/grading.sat - Grade calculator
+//
+// Determines letter grades based on numeric scores
+
+import io
+
+io.println "=== Grade Calculator ==="
+io.println ""
+
+// Student scores
+let alice_score := 95
+let bob_score := 82
+let charlie_score := 67
+let diana_score := 54
+
+// Calculate Alice's grade
+io.print "Alice ({}): ", alice_score
+if alice_score >= 90 then
+    io.println "A - Excellent!"
+else
+    if alice_score >= 80 then
+        io.println "B - Good!"
+    else
+        if alice_score >= 70 then
+            io.println "C - Average"
+        else
+            if alice_score >= 60 then
+                io.println "D - Below Average"
+            else
+                io.println "F - Failing"
+
+// Calculate Bob's grade
+io.print "Bob ({}): ", bob_score
+if bob_score >= 90 then
+    io.println "A - Excellent!"
+else
+    if bob_score >= 80 then
+        io.println "B - Good!"
+    else
+        if bob_score >= 70 then
+            io.println "C - Average"
+        else
+            if bob_score >= 60 then
+                io.println "D - Below Average"
+            else
+                io.println "F - Failing"
+
+// Calculate Charlie's grade
+io.print "Charlie ({}): ", charlie_score
+if charlie_score >= 90 then
+    io.println "A - Excellent!"
+else
+    if charlie_score >= 80 then
+        io.println "B - Good!"
+    else
+        if charlie_score >= 70 then
+            io.println "C - Average"
+        else
+            if charlie_score >= 60 then
+                io.println "D - Below Average"
+            else
+                io.println "F - Failing"
+
+// Calculate Diana's grade
+io.print "Diana ({}): ", diana_score
+if diana_score >= 90 then
+    io.println "A - Excellent!"
+else
+    if diana_score >= 80 then
+        io.println "B - Good!"
+    else
+        if diana_score >= 70 then
+            io.println "C - Average"
+        else
+            if diana_score >= 60 then
+                io.println "D - Below Average"
+            else
+                io.println "F - Failing"
+
+io.println ""
+
+// Class statistics
+let total := alice_score + bob_score + charlie_score + diana_score
+let average := total / 4
+io.println "Class Average: {}", average
+
+if average >= 75 then
+    io.println "Class Performance: Above Average"
+else
+    io.println "Class Performance: Needs Improvement"
+
+io.println ""
+io.println "Grade calculation complete!"

@@ -1,0 +1,57 @@
+// examples/simple_demo.sat - Quick demonstration
+
+import io
+
+io.println "=== Satori Language Demo ==="
+io.println ""
+
+io.println "1. Variables:"
+let name := "Satori"
+let version := 1
+io.println "  Language: {}", name
+io.println "  Version: {}", version
+
+io.println ""
+io.println "2. Arithmetic:"
+let x := 15
+let y := 4
+io.println "  {} + {} = {}", x, y, x + y
+io.println "  {} - {} = {}", x, y, x - y
+io.println "  {} * {} = {}", x, y, x * y
+io.println "  {} / {} = {}", x, y, x / y
+io.println "  {} % {} = {}", x, y, x % y
+
+io.println ""
+io.println "3. Comparisons:"
+io.println "  {} > {} = {}", x, y, x > y
+io.println "  {} == {} = {}", x, y, x == y
+io.println "  {} != {} = {}", x, y, x != y
+
+io.println ""
+io.println "4. Control Flow:"
+let score := 85
+
+if score >= 90 then
+    io.println "  Grade: A"
+else
+    if score >= 80 then
+        io.println "  Grade: B"
+    else
+        if score >= 70 then
+            io.println "  Grade: C"
+        else
+            io.println "  Grade: F"
+
+io.println ""
+io.println "5. Complex Expressions:"
+let result := 2 + 3 * 4
+io.println "  2 + 3 * 4 = {} (precedence works!)", result
+
+io.println ""
+io.println "6. Format Strings:"
+let user := "Alice"
+let points := 1337
+io.println "  Player {} scored {} points!", user, points
+
+io.println ""
+io.println "Demo complete! Satori works!"

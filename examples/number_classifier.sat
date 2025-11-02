@@ -1,0 +1,122 @@
+// examples/number_classifier.sat - Number classification
+//
+// Classifies numbers by their properties
+
+import io
+
+io.println "=== Number Classifier ==="
+io.println ""
+
+// Test several numbers
+let num1 := 17
+let num2 := 24
+let num3 := 0
+let num4 := -5
+
+// Classify num1
+io.println "Number: {}", num1
+io.print "  "
+if num1 > 0 then
+    io.println "Positive"
+else
+    if num1 < 0 then
+        io.println "Negative"
+    else
+        io.println "Zero"
+
+io.print "  "
+if num1 % 2 == 0 then
+    io.println "Even"
+else
+    io.println "Odd"
+
+io.print "  "
+if num1 % 3 == 0 then
+    io.println "Divisible by 3"
+
+io.print "  "
+if num1 > 10 then
+    io.println "Greater than 10"
+
+io.println ""
+
+// Classify num2
+io.println "Number: {}", num2
+io.print "  "
+if num2 > 0 then
+    io.println "Positive"
+else
+    if num2 < 0 then
+        io.println "Negative"
+    else
+        io.println "Zero"
+
+io.print "  "
+if num2 % 2 == 0 then
+    io.println "Even"
+else
+    io.println "Odd"
+
+io.print "  "
+if num2 % 3 == 0 then
+    io.println "Divisible by 3"
+
+io.print "  "
+if num2 % 4 == 0 then
+    io.println "Divisible by 4"
+
+io.print "  "
+if num2 % 6 == 0 then
+    io.println "Divisible by 6"
+
+io.println ""
+
+// Classify num3
+io.println "Number: {}", num3
+io.print "  "
+if num3 > 0 then
+    io.println "Positive"
+else
+    if num3 < 0 then
+        io.println "Negative"
+    else
+        io.println "Zero (special case)"
+
+io.println ""
+
+// Classify num4
+io.println "Number: {}", num4
+io.print "  "
+if num4 > 0 then
+    io.println "Positive"
+else
+    if num4 < 0 then
+        io.println "Negative"
+    else
+        io.println "Zero"
+
+io.print "  "
+if num4 % 2 == 0 then
+    io.println "Even"
+else
+    io.println "Odd"
+
+io.println ""
+
+// Range classification
+io.println "Range Classification:"
+let value := 42
+
+if value < 0 then
+    io.println "{} is negative", value
+else
+    if value < 10 then
+        io.println "{} is a single digit", value
+    else
+        if value < 100 then
+            io.println "{} is a two-digit number", value
+        else
+            io.println "{} is three digits or more", value
+
+io.println ""
+io.println "Classification complete!"

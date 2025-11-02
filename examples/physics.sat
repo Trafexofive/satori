@@ -1,0 +1,76 @@
+// examples/physics.sat - Physics calculations
+//
+// Demonstrates scientific computations
+
+import io
+
+io.println "=== Physics Calculator ==="
+io.println ""
+
+// Constants
+let g := 9.81  // gravity (m/s²)
+let c := 299792458  // speed of light (m/s)
+
+io.println "Physical Constants:"
+io.println "  Gravity (g): {} m/s²", g
+io.println "  Speed of Light (c): {} m/s", c
+io.println ""
+
+// Free fall calculation
+io.println "Free Fall Calculation:"
+let time := 5.0
+let distance := 0.5 * g * time * time
+io.println "  Object falling for {} seconds", time
+io.println "  Distance fallen: {} meters", distance
+let velocity := g * time
+io.println "  Final velocity: {} m/s", velocity
+io.println ""
+
+// Kinetic energy
+io.println "Kinetic Energy:"
+let mass := 10.0
+let speed := 20.0
+let kinetic_energy := 0.5 * mass * speed * speed
+io.println "  Mass: {} kg, Speed: {} m/s", mass, speed
+io.println "  Kinetic Energy: {} Joules", kinetic_energy
+io.println ""
+
+// Force calculation (F = ma)
+io.println "Force Calculation (F = ma):"
+let object_mass := 50.0
+let acceleration := 3.0
+let force := object_mass * acceleration
+io.println "  Mass: {} kg, Acceleration: {} m/s²", object_mass, acceleration
+io.println "  Force: {} Newtons", force
+io.println ""
+
+// Projectile motion
+io.println "Projectile Motion:"
+let launch_angle := 45.0  // degrees (treating as scalar for demo)
+let initial_velocity := 30.0
+let flight_time := 4.0
+let horizontal_distance := initial_velocity * flight_time
+io.println "  Launch velocity: {} m/s, Time: {} s", initial_velocity, flight_time
+io.println "  Horizontal distance: {} meters", horizontal_distance
+io.println ""
+
+// Power calculation
+io.println "Power Calculation:"
+let work := 1000.0
+let work_time := 5.0
+let power := work / work_time
+io.println "  Work done: {} Joules in {} seconds", work, work_time
+io.println "  Power: {} Watts", power
+io.println ""
+
+// Density calculation
+io.println "Density Calculation:"
+let obj_mass := 150.0
+let volume := 50.0
+let density := obj_mass / volume
+io.println "  Mass: {} kg, Volume: {} m³", obj_mass, volume
+io.println "  Density: {} kg/m³", density
+io.println ""
+
+io.println "Physics calculations complete!"
+io.println "Note: These are simplified calculations for demonstration"

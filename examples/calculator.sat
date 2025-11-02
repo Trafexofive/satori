@@ -1,0 +1,57 @@
+// examples/calculator.sat - Simple calculator
+
+import io
+
+io.println "=== Satori Calculator ==="
+io.println ""
+
+let x := 42
+let y := 7
+
+io.println "Numbers: x = {}, y = {}", x, y
+io.println ""
+
+io.println "Arithmetic:"
+io.println "  x + y = {}", x + y
+io.println "  x - y = {}", x - y
+io.println "  x * y = {}", x * y
+io.println "  x / y = {}", x / y
+io.println "  x % y = {}", x % y
+
+io.println ""
+io.println "Comparisons:"
+io.println "  x > y  = {}", x > y
+io.println "  x < y  = {}", x < y
+io.println "  x == y = {}", x == y
+io.println "  x != y = {}", x != y
+
+io.println ""
+io.println "Complex Expressions:"
+let result1 := x * 2 + y * 3
+io.println "  x * 2 + y * 3 = {}", result1
+
+let result2 := 100 - x + y * 2
+io.println "  100 - x + y * 2 = {}", result2
+
+io.println ""
+io.println "Area Calculations:"
+let width := 12
+let height := 8
+let area := width * height
+io.println "  Rectangle ({}x{}): area = {}", width, height, area
+
+let radius := 5.0
+let pi := 3.14159
+let circle_area := pi * radius * radius
+io.println "  Circle (r={}): area = {}", radius, circle_area
+
+io.println ""
+io.println "Temperature Conversion:"
+let celsius := 25.0
+let f_part1 := celsius * 9.0
+let f_part2 := f_part1 / 5.0
+let fahrenheit := f_part2 + 32.0
+io.println "  {}°C = {}°F", celsius, fahrenheit
+
+io.println ""
+io.println "Calculator complete!"
