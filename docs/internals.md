@@ -23,35 +23,91 @@ Source Code (.sat)
 
 ## Directory Structure
 
+Satori uses a modular, layered architecture with clean separation of concerns:
+
 ```
 satori/
-├── src/              # Core implementation
-│   ├── lexer.c/h     # Lexical analyzer
-│   ├── parser.c/h    # Syntax parser
-│   ├── ast.c/h       # AST data structures
-│   ├── typechecker.c/h # Type checking
-│   ├── codegen.c/h   # Bytecode generation
-│   ├── vm.c/h        # Virtual machine
-│   ├── memory.c/h    # Memory management
-│   ├── error.c/h     # Error reporting
-│   ├── common.h      # Common definitions
-│   └── main.c        # Entry point
-├── stdlib/           # Standard library
-├── tests/            # Test suite
-├── examples/         # Example programs
-├── docs/             # Documentation
-└── build/            # Build artifacts
+├── src/                    # Core implementation
+│   ├── core/              # Layer 0: Foundation
+│   │   ├── common.h       # Common type definitions
+│   │   ├── value.c/h      # Value representation
+│   │   ├── object.c/h     # Heap objects (strings, etc.)
+│   │   └── memory.c/h     # Memory management & GC
+│   ├── frontend/          # Layer 1: Source processing
+│   │   ├── lexer.c/h      # Lexical analyzer
+│   │   ├── parser.c/h     # Syntax parser
+│   │   ├── ast.c/h        # AST data structures
+│   │   └── typechecker.c/h # Type checking (stub)
+│   ├── backend/           # Layer 2: Code generation
+│   │   └── codegen.c/h    # AST to bytecode compiler
+│   ├── runtime/           # Layer 3: Execution
+│   │   └── vm.c/h         # Stack-based virtual machine
+│   ├── error/             # Cross-cutting: Diagnostics
+│   │   └── error.c/h      # Error reporting
+│   ├── common.h           # Legacy common header
+│   └── main.c             # Entry point
+├── stdlib/                # Layer 4: Standard library (stubs)
+├── tests/                 # Test suite
+├── examples/              # Example programs
+├── docs/                  # Documentation
+├── notes/                 # Development resources
+├── scripts/               # Build and utility scripts
+└── build/                 # Build artifacts (generated)
 ```
+
+### Architectural Layers
+
+The codebase follows a strict layering discipline:
+
+**Layer 0 - Core** (`src/core/`)
+- Value representation and type system
+- Object model for heap-allocated data
+- Memory management and garbage collection
+- No dependencies on other layers
+
+**Layer 1 - Frontend** (`src/frontend/`)
+- Lexical analysis (tokenization)
+- Syntax analysis (parsing to AST)
+- Semantic analysis (type checking)
+- Depends only on Layer 0
+
+**Layer 2 - Backend** (`src/backend/`)
+- Code generation (AST to bytecode)
+- Optimization passes (future)
+- Depends on Layers 0 and 1
+
+**Layer 3 - Runtime** (`src/runtime/`)
+- Virtual machine execution
+- Bytecode interpretation
+- Stack management
+- Depends on Layers 0 and 2
+
+**Cross-cutting - Error** (`src/error/`)
+- Error reporting and diagnostics
+- Can be used by any layer
+
+**Layer 4 - Standard Library** (`stdlib/`)
+- Built-in modules (io, net, fs, etc.)
+- Implemented in C, exposed to Satori
+- Depends on all lower layers
+
+This design ensures:
+- ✅ No circular dependencies
+- ✅ Clear module boundaries
+- ✅ Independent testing
+- ✅ Easy to extend and modify
 
 ## Core Components
 
-### 1. Lexer (lexer.c/h)
+### 1. Lexer (src/frontend/lexer.c/h)
 
 The lexer performs lexical analysis, converting source text into a stream of tokens.
 
+**Location:** `src/frontend/lexer.c` and `src/frontend/lexer.h`
+
 #### Token Types
 
-Defined in `TOKEN_*` enum in `lexer.h`:
+Defined in `TokenType` enum in `src/frontend/lexer.h`:
 - **Single-character**: `(`, `)`, `{`, `}`, `[`, `]`, `,`, `.`, `:`, `;`
 - **Operators**: `+`, `-`, `*`, `/`, `%`, `&`, `|`, `^`, `!`, `=`, `<`, `>`
 - **Two-character**: `==`, `!=`, `<=`, `>=`, `:=`, `..`, `->`
@@ -91,9 +147,11 @@ The lexer uses a single-pass scan with lookahead. It handles:
 
 ---
 
-### 2. Parser (parser.c/h)
+### 2. Parser (src/frontend/parser.c/h)
 
 Recursive descent parser that builds an Abstract Syntax Tree (AST) from tokens.
+
+**Location:** `src/frontend/parser.c` and `src/frontend/parser.h`
 
 #### Parser State
 
@@ -135,9 +193,11 @@ Implemented via recursive descent with precedence climbing:
 
 ---
 
-### 3. AST (ast.c/h)
+### 3. AST (src/frontend/ast.c/h)
 
 Abstract Syntax Tree representation of the parsed program.
+
+**Location:** `src/frontend/ast.c` and `src/frontend/ast.h`
 
 #### Node Types
 
@@ -215,9 +275,11 @@ AstNode *ast_make_call(AstNode *callee, AstNode **args, int arg_count,
 
 ---
 
-### 4. Type Checker (typechecker.c/h)
+### 4. Type Checker (src/frontend/typechecker.c/h)
 
 **Status:** Planned, not yet implemented
+
+**Location:** `src/frontend/typechecker.c` and `src/frontend/typechecker.h`
 
 The type checker will:
 - Verify type correctness
@@ -230,9 +292,11 @@ Will annotate AST nodes with resolved types.
 
 ---
 
-### 5. Code Generator (codegen.c/h)
+### 5. Code Generator (src/backend/codegen.c/h)
 
 Emits bytecode from the AST.
+
+**Location:** `src/backend/codegen.c` and `src/backend/codegen.h`
 
 #### Compiler State
 
@@ -284,9 +348,11 @@ static void compile_call(Compiler *c, AstNode *node) {
 
 ---
 
-### 6. Virtual Machine (vm.c/h)
+### 6. Virtual Machine (src/runtime/vm.c/h)
 
 Stack-based bytecode interpreter.
+
+**Location:** `src/runtime/vm.c` and `src/runtime/vm.h`
 
 #### VM State
 
@@ -316,27 +382,35 @@ typedef enum {
 
 #### Value Representation
 
+**Now in:** `src/core/value.c/h`
+
+Values are represented using a tagged union with support for multiple types:
+
 ```c
 typedef enum {
   VALUE_NIL,
+  VALUE_BOOL,
   VALUE_INT,
   VALUE_FLOAT,
-  VALUE_BOOL,
-  VALUE_STRING,
-  VALUE_NATIVE_FN,
+  VALUE_STRING,      // Simple string (will use ObjString later)
+  VALUE_NATIVE_FN,   // Native C function
+  VALUE_OBJ,         // Heap-allocated object
 } ValueType;
 
 struct Value {
   ValueType type;
   union {
+    bool as_bool;
     i64 as_int;
     f64 as_float;
-    bool as_bool;
-    char *as_string;
-    NativeFn as_native_fn;
+    char *as_string;      // For VALUE_STRING
+    NativeFn as_native_fn; // For VALUE_NATIVE_FN
+    Object *as_obj;       // For VALUE_OBJ
   } u;
 };
 ```
+
+Value operations (constructors, printing, freeing) are in `src/core/value.c`.
 
 #### Execution Loop
 
@@ -391,9 +465,13 @@ static Value peek(VM *vm, int distance) {
 
 ---
 
-### 7. Memory Management (memory.c/h)
+### 7. Memory Management (src/core/memory.c/h)
+
+**Location:** `src/core/memory.c` and `src/core/memory.h`
 
 Custom memory allocator for the VM.
+
+**Status:** Stub - basic malloc/free wrappers currently
 
 #### Allocation Functions
 
@@ -425,7 +503,51 @@ Future GC will use mark-and-sweep algorithm:
 
 ---
 
-### 8. Error Reporting (error.c/h)
+### 8. Object System (src/core/object.c/h)
+
+**Location:** `src/core/object.c` and `src/core/object.h`
+
+Heap-allocated objects with a common header.
+
+#### Object Types
+
+```c
+typedef enum {
+  OBJ_STRING,    // Heap-allocated string
+  OBJ_ARRAY,     // Dynamic array (future)
+  OBJ_TABLE,     // Hash table (future)
+  OBJ_FUNCTION,  // User function (future)
+} ObjectType;
+```
+
+#### Object Header
+
+```c
+typedef struct Object {
+  ObjectType type;
+  bool marked;           // For GC
+  struct Object *next;   // Intrusive list for GC
+} Object;
+```
+
+#### String Objects
+
+```c
+typedef struct {
+  Object obj;
+  int length;
+  char *chars;
+  u32 hash;
+} ObjString;
+```
+
+Strings are interned for efficient comparison and reduced memory usage.
+
+---
+
+### 9. Error Reporting (src/error/error.c/h)
+
+**Location:** `src/error/error.c` and `src/error/error.h`
 
 Unified error reporting with source location.
 
@@ -556,13 +678,51 @@ int stack_top;
 
 ## Build System
 
+### Modular Makefile
+
+The Makefile supports modular compilation with layer-based organization.
+
+**Key Features:**
+- Separate compilation of each module
+- Automatic dependency management
+- Support for debug and release builds  
+- Install/uninstall targets
+- Example runner targets
+
+### Build Process
+
+```makefile
+# Layer 0: Core (no dependencies)
+build/core/%.o: src/core/%.c
+    gcc $(CFLAGS) -Isrc -c $< -o $@
+
+# Layer 1: Frontend (depends on core)
+build/frontend/%.o: src/frontend/%.c
+    gcc $(CFLAGS) -Isrc -c $< -o $@
+
+# Layer 2: Backend (depends on core, frontend)
+build/backend/%.o: src/backend/%.c
+    gcc $(CFLAGS) -Isrc -c $< -o $@
+
+# Layer 3: Runtime (depends on core, backend)
+build/runtime/%.o: src/runtime/%.c
+    gcc $(CFLAGS) -Isrc -c $< -o $@
+```
+
+All includes use `-Isrc` prefix, so headers are referenced as:
+- `#include "core/value.h"`
+- `#include "frontend/lexer.h"`
+- `#include "runtime/vm.h"`
+
 ### Makefile Targets
 
 - `make` - Build release binary
 - `make debug` - Build with debug symbols
-- `make test` - Run test suite
 - `make clean` - Remove build artifacts
 - `make install` - Install to `/usr/local/bin`
+- `make uninstall` - Remove from `/usr/local/bin`
+- `make run-hello` - Build and run hello.sat example
+- `make test-lexer` - Test lexer only (future)
 
 ### Compiler Flags
 
@@ -684,23 +844,72 @@ Current implementation uses simple allocation:
 ### Adding Features
 
 1. Update grammar in `docs/spec.md`
-2. Add token types in `lexer.h`
-3. Implement lexing in `lexer.c`
-4. Add AST node type in `ast.h`
-5. Implement parsing in `parser.c`
-6. Add opcode in `vm.h` (if needed)
-7. Implement codegen in `codegen.c`
-8. Implement VM execution in `vm.c`
-9. Add tests
+2. Add token types in `src/frontend/lexer.h`
+3. Implement lexing in `src/frontend/lexer.c`
+4. Add AST node type in `src/frontend/ast.h`
+5. Implement parsing in `src/frontend/parser.c`
+6. Add opcode in `src/runtime/vm.h` (if needed)
+7. Implement codegen in `src/backend/codegen.c`
+8. Implement VM execution in `src/runtime/vm.c`
+9. Add tests in `tests/`
 10. Update documentation
+
+### Module Boundaries
+
+When adding features, respect the layer boundaries:
+- **Layer 0 (core)** - No dependencies on other layers
+- **Layer 1 (frontend)** - May import from core only
+- **Layer 2 (backend)** - May import from core and frontend
+- **Layer 3 (runtime)** - May import from core and backend
+- **Error module** - May be used by any layer (cross-cutting)
+
+Do not create circular dependencies between modules.
+
+---
+
+## Implementation Status
+
+### ✅ Completed
+- Lexer with full tokenization
+- Parser for basic constructs (imports, calls, member access)
+- AST representation
+- Bytecode generation with optimizations
+- Stack-based VM execution
+- Value system with multiple types
+- Object system with string interning
+- Modular architecture (Nov 2024)
+
+### 🚧 In Progress
+- Type checker (stub exists)
+- Variables and assignment
+- Control flow structures
+- Function declarations
+
+### 📋 Planned
+- Structs and methods
+- Arrays and collections
+- Error handling (`or`, `defer`)
+- Garbage collection
+- Standard library expansion
+- Concurrency primitives
+- AOT compilation
 
 ---
 
 ## Version History
 
-- **v0.1.0-alpha** (current) - Basic lexer, parser, AST, VM with io.println
-- **v0.0.1** - Initial project structure
+- **v0.1.0-alpha** (2024-11-02) - Initial release with modular architecture
+  - Complete lexer and parser
+  - Basic VM with io.println
+  - Modular code structure (core, frontend, backend, runtime, error)
+  - Comprehensive documentation
+  
+- **v0.0.1** (2024-11-01) - Initial project structure
 
 ---
+
+**Last Updated:** 2024-11-02  
+**Version:** 0.1.0-alpha  
+**Status:** Active Development
 
 **Built from scratch, with focus. 🌸**
