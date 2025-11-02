@@ -6,7 +6,9 @@ Satori combines the safety of static typing with the ergonomics of scripting lan
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
-[![Version](https://img.shields.io/badge/version-0.1.0--alpha-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-0.1.0--alpha-blue.svg)]()
+
+> **Status:** Core interpreter working! Modules, variables, arithmetic, and control flow implemented.
 
 ## Philosophy
 
@@ -16,80 +18,62 @@ Satori combines the safety of static typing with the ergonomics of scripting lan
 - **Zero magic** - No hidden runtime costs
 - **Build for yourself** - Your infra, your rules, your wheel to reinvent
 
-## Features
-
-- 🎯 **Static typing** with type inference
-- 🔧 **Simple OOP** - structs with methods, no inheritance
-- ⚡ **Lightweight concurrency** with `spawn`
-- 🛡️ **Explicit error handling** with `or` operator
-- 📦 **Module system** - no header file dance
-- 🔗 **C FFI** - seamless interop
-- 🎨 **Script or compile** - interpreted for dev, AOT for prod
-
 ## Quick Example
 
+**What works right now:**
+
 ```satori
 import io
 
-struct Point {
-    int x, y
-    
-    int distance()
-        return x*x + y*y  // Simplified distance squared
-}
+// Variables with type inference
+let score := 85
+let name := "Alice"
 
-let p := Point{3, 4}
-io.println "Distance: {}", p.distance()
+// Arithmetic with correct precedence
+let result := 2 + 3 * 4  // 14
+
+// Comparisons
+io.println "{} > 80 = {}", score, score > 80
+
+// Control flow
+if score >= 90 then
+    io.println "{}: A - Excellent!", name
+else
+    if score >= 80 then
+        io.println "{}: B - Good!", name
+    else
+        io.println "{}: C - Average", name
+
+// Format strings with multiple arguments
+io.println "Student: {}, Score: {}, Result: {}", name, score, result
 ```
 
-## More Examples
-
-### Simple Server
-```satori
-import io
-import net
-
-void handle_client(net.Socket client)
-    defer client.close()
-    let request := client.read(4096) or return
-    client.write("HTTP/1.0 200 OK\r\n\r\nHello!\n".bytes())
-
-let listener := net.listen("0.0.0.0", 8080) or panic("Cannot bind")
-io.println "Server running on :8080"
-
-loop
-    let client := listener.accept() or continue
-    spawn handle_client(client)
+**Output:**
+```
+85 > 80 = true
+Alice: B - Good!
+Student: Alice, Score: 85, Result: 14
 ```
 
-### Error Handling
-```satori
-import io
-import fs
+## Running Examples
 
-void process_config()
-    let file := fs.open("config.json", "r") or return
-    defer file.close()
-    
-    let content := file.read_all() or return
-    let config := json.parse(content) or panic("Invalid JSON")
-    
-    io.println "Config loaded: {}", config
+Try the included examples:
+
+```bash
+# Feature showcase
+./bin/satori examples/showcase.sat
+
+# Grade calculator
+./bin/satori examples/grading.sat
+
+# Number classification
+./bin/satori examples/number_classifier.sat
+
+# FizzBuzz
+./bin/satori examples/fizzbuzz.sat
 ```
 
-### Functions & Control Flow
-```satori
-import io
-
-int factorial(int n)
-    if n <= 1: return 1
-    return n * factorial(n - 1)
-
-for i in 0..10
-    io.println "{}! = {}", i, factorial(i)
-```
-
-More examples in [`examples/`](examples/)
+See [`examples/`](examples/) for more.
 
 ## Quick Start
 
@@ -119,7 +103,8 @@ Create `hello.sat`:
 ```satori
 import io
 
-io.println "Hello, World!"
+let name := "World"
+io.println "Hello, {}!", name
 ```
 
 Run it:
@@ -127,120 +112,144 @@ Run it:
 ./bin/satori hello.sat
 ```
 
+Output:
+```
+Hello, World!
+```
+
 ## Language Tour
 
 ### Variables
 
 ```satori
-let x := 42              // Type inference
-let y: float = 3.14      // Explicit type
-let name := "Satori"     // Strings
-let active := true       // Booleans
+let x := 42              // Type inference - int
+let pi := 3.14159        // float
+let name := "Satori"     // string
 ```
 
-### Functions
+### Arithmetic
 
 ```satori
-int add(int a, int b)
-    return a + b
+let result := 2 + 3 * 4  // 14 (correct precedence)
+let remainder := 17 % 5  // 2
+let quotient := 10 / 3   // 3.333...
 
-void greet(string name)
-    io.println "Hello, {}", name
-```
-
-### Structs & Methods
-
-```satori
-struct Rectangle {
-    int width, height
-    
-    int area()
-        return width * height
-    
-    void scale(int factor)
-        width *= factor
-        height *= factor
-}
-
-let rect := Rectangle{10, 20}
-io.println "Area: {}", rect.area()
+// All operators: + - * / %
+// Comparisons: < <= > >= == !=
+// Unary: - (negation), ! (not)
 ```
 
 ### Control Flow
 
 ```satori
-// If/else
-if x > 10
+// If/else with then keyword
+if x > 10 then
     io.println "Large"
 else
     io.println "Small"
 
-// For loops
-for i in 0..10
-    io.println i
+// Nested conditions
+if score >= 90 then
+    io.println "A"
+else
+    if score >= 80 then
+        io.println "B"
+    else
+        io.println "C"
 
-// While loops
-while condition
-    do_work()
-
-// Infinite loop
-loop
-    if should_break: break
+// While loops (structure ready, needs assignment)
+while count < 10 then
+    io.println count
+    count = count + 1  // Assignment coming soon
 ```
 
-### Error Handling
+### Format Strings
 
 ```satori
-// Provide default
-let port := parse_int(env("PORT")) or 8080
+// Multiple arguments with {} placeholders
+io.println "Name: {}, Score: {}", name, score
+io.println "x={}, y={}, sum={}", x, y, x + y
 
-// Early return
-let file := fs.open("data.txt") or return
-
-// Panic on critical error
-let db := connect_db() or panic("Database required")
-
-// Always cleanup with defer
-defer file.close()
-```
-
-### Concurrency
-
-```satori
-// Spawn lightweight tasks
-spawn worker(data)
-spawn another_worker()
-
-// Cooperative scheduling
-loop
-    do_work()
-    yield  // Let other tasks run
+// Expressions in arguments
+io.println "Result: {}", 2 + 3 * 4
 ```
 
 ## Project Status
 
-🚧 **Early Development** - Core interpreter in progress
+✅ **Working Now** - Core interpreter functional with real programs
 
 ### Implemented ✅
-- [x] Lexer - Full tokenization
-- [x] Parser - AST construction
-- [x] Basic VM - Bytecode execution
-- [x] Simple codegen - AST to bytecode
-- [x] `io.println` - Basic output
+
+**Phase 1: Module System**
+- [x] Module imports (`import io`)
+- [x] Native C function binding
+- [x] Lazy loading and caching
+- [x] Namespaced calls (`io.println`)
+
+**Phase 2: Variables**
+- [x] Variable declarations (`let x := 42`)
+- [x] Type inference (int, float, string)
+- [x] Local variable storage
+- [x] Variable usage in expressions
+
+**Phase 3: Multiple Arguments & Format Strings**
+- [x] Comma-separated arguments
+- [x] `{}` placeholder interpolation
+- [x] Variadic native functions
+
+**Phase 4: Arithmetic & Operators**
+- [x] Arithmetic operators: `+ - * / %`
+- [x] Comparison operators: `< <= > >= == !=`
+- [x] Unary operators: `-` (negate), `!` (not)
+- [x] Correct operator precedence
+- [x] Mixed int/float arithmetic
+
+**Phase 5: Control Flow**
+- [x] `if/then/else` statements
+- [x] Nested conditionals
+- [x] `while` loop structure
+- [x] `loop` (infinite loop) structure
+- [x] Jump opcodes and patching
+
+**Core Infrastructure**
+- [x] Lexer with full tokenization
+- [x] Parser with expression precedence
+- [x] AST construction and traversal
+- [x] Bytecode VM with stack
+- [x] Code generation (AST → bytecode)
+- [x] Hash table for fast lookups
+- [x] Value system (int, float, string, bool)
 
 ### In Progress 🚧
-- [ ] Type checker - Type inference and validation
-- [ ] Variables - Declaration and assignment
-- [ ] Control flow - if/else, loops
-- [ ] Functions - Declarations and calls
-- [ ] Error reporting - Better diagnostics
+
+- [ ] Assignment operator (AST ready, parser needs work)
+- [ ] Parentheses in expressions
+- [ ] `break` and `continue` (needs loop context)
+- [ ] Boolean literals (`true`, `false`)
+- [ ] Logical operators (`and`, `or`)
 
 ### Planned 📋
-- [ ] Structs - User-defined types
-- [ ] Standard library - io, fs, net, collections
-- [ ] Concurrency - spawn, channels
-- [ ] Error handling - `or` operator, defer
-- [ ] AOT compiler - Native code generation
+
+**Near Term**
+- [ ] Functions - declarations and calls
+- [ ] Return statements
+- [ ] Arrays and indexing
+- [ ] String manipulation stdlib
+- [ ] Better error messages with line numbers
+
+**Medium Term**
+- [ ] Structs - user-defined types
+- [ ] Methods on structs
+- [ ] Type checker - static validation
+- [ ] Standard library expansion (fs, math, string)
+- [ ] Garbage collection
+
+**Long Term**
+- [ ] Concurrency (`spawn`, channels)
+- [ ] Error handling (`or` operator, `defer`)
+- [ ] AOT compilation to native code
+- [ ] LLVM backend
+- [ ] Full stdlib (net, json, etc.)
 
 See [`notes/TODO.md`](notes/TODO.md) for detailed roadmap.
 
@@ -294,35 +303,48 @@ make test
 
 ## Roadmap
 
-### v0.1 - Core Interpreter (Current)
-- Lexer, parser, basic VM
-- Variables and functions
-- Control flow structures
-- Basic type checking
+### v0.1 - Core Interpreter ✅ (Current - Working!)
+- ✅ Lexer, parser, VM
+- ✅ Variables and expressions
+- ✅ Control flow (if/else)
+- ✅ Arithmetic and comparisons
+- ✅ Module system with native functions
+- 🚧 Assignment operator
+- 🚧 Boolean literals and logical operators
 
-### v0.2 - Language Features
-- Structs with methods
-- Arrays and slices
-- Error handling (`or`, `defer`)
-- Standard library basics
+### v0.2 - Functions & Data Structures
+- [ ] Function declarations and calls
+- [ ] Return statements
+- [ ] Arrays and slices
+- [ ] Structs (basic)
+- [ ] Type checking foundation
 
-### v0.3 - Concurrency & Modules
-- Lightweight tasks (`spawn`)
-- Module system
-- Channels for communication
-- Performance optimization
+### v0.3 - Standard Library & Features
+- [ ] Structs with methods
+- [ ] String manipulation
+- [ ] File I/O (fs module)
+- [ ] Math module
+- [ ] Error handling basics
+- [ ] Garbage collection
 
-### v0.4 - AOT Compilation
-- Compile to native code
-- LLVM backend
-- Optimization passes
-- Static linking
+### v0.4 - Advanced Features
+- [ ] Concurrency primitives
+- [ ] Error handling (`or`, `defer`)
+- [ ] Module imports from files
+- [ ] JSON parsing
+- [ ] Network I/O
+
+### v0.5 - Performance & Polish
+- [ ] AOT compilation option
+- [ ] Optimization passes
+- [ ] Complete standard library
+- [ ] Comprehensive documentation
 
 ### v1.0 - Stable Release
-- Complete language spec
-- Comprehensive stdlib
-- Full documentation
-- Production ready
+- [ ] Language spec finalized
+- [ ] Full stdlib
+- [ ] Production ready
+- [ ] Performance benchmarks
 
 ## Philosophy & Design
 
