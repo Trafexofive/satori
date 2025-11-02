@@ -1,0 +1,111 @@
+// Aspirational Test 02: Functions and Structs
+// This file tests function definitions, calls, and struct types
+
+import io
+
+// Simple function with no return value
+fn greet(name: string) {
+  io.println "Hello, {}!", name
+}
+
+// Function with return value
+fn add(a: int, b: int) -> int {
+  return a + b
+}
+
+// Function with multiple return values
+fn swap(a: int, b: int) -> (int, int) {
+  return b, a
+}
+
+// Function with default parameter (future feature)
+fn say(message: string, times: int = 1) {
+  for i := 0; i < times; i = i + 1 {
+    io.println message
+  }
+}
+
+// Recursive function
+fn factorial(n: int) -> int {
+  if n <= 1 {
+    return 1
+  }
+  return n * factorial(n - 1)
+}
+
+// Struct definition
+struct Point {
+  x: int,
+  y: int
+}
+
+// Struct with methods
+struct Rectangle {
+  width: int,
+  height: int,
+  
+  fn area(self) -> int {
+    return self.width * self.height
+  }
+  
+  fn perimeter(self) -> int {
+    return 2 * (self.width + self.height)
+  }
+}
+
+// Struct with string field
+struct Person {
+  name: string,
+  age: int,
+  
+  fn introduce(self) {
+    io.println "I'm {} and I'm {} years old", self.name, self.age
+  }
+}
+
+// Main execution
+greet("World")
+greet("Satori")
+
+let result := add(10, 20)
+io.println "10 + 20 = {}", result
+
+let x := 5
+let y := 3
+let (new_x, new_y) := swap(x, y)
+io.println "After swap: x={}, y={}", new_x, new_y
+
+say("Testing", 3)
+
+let fact5 := factorial(5)
+io.println "5! = {}", fact5
+
+// Create struct instances
+let p := Point { x: 10, y: 20 }
+io.println "Point: ({}, {})", p.x, p.y
+
+let rect := Rectangle { width: 5, height: 3 }
+io.println "Rectangle area: {}", rect.area()
+io.println "Rectangle perimeter: {}", rect.perimeter()
+
+let person := Person { name: "Alice", age: 30 }
+person.introduce()
+
+// Modify struct fields
+p.x = 100
+p.y = 200
+io.println "Modified point: ({}, {})", p.x, p.y
+
+// Nested structs
+struct Circle {
+  center: Point,
+  radius: int
+}
+
+let circle := Circle {
+  center: Point { x: 0, y: 0 },
+  radius: 10
+}
+
+io.println "Circle at ({}, {}) with radius {}", 
+  circle.center.x, circle.center.y, circle.radius

@@ -1,0 +1,87 @@
+// Aspirational Test 01: Variables and Control Flow
+// This file tests features we need to implement next
+
+import io
+
+// Variable declarations with type inference
+let x := 42
+let name := "Satori"
+let pi := 3.14159
+let is_active := true
+
+// Type-annotated declarations
+let count: int = 0
+let message: string = "Hello"
+
+// Printing variables
+io.println "x = {}", x
+io.println "name = {}", name
+io.println "pi = {}", pi
+io.println "is_active = {}", is_active
+
+// Arithmetic operations
+let sum := x + 10
+let product := x * 2
+let division := x / 2
+let modulo := x % 5
+
+io.println "sum = {}", sum
+io.println "product = {}", product
+io.println "division = {}", division
+io.println "modulo = {}", modulo
+
+// If-else statements
+if x > 40 {
+  io.println "x is greater than 40"
+} else {
+  io.println "x is not greater than 40"
+}
+
+// If with multiple conditions
+if x > 30 and x < 50 {
+  io.println "x is between 30 and 50"
+}
+
+// While loop
+let i := 0
+while i < 5 {
+  io.println "Iteration: {}", i
+  i = i + 1
+}
+
+// For loop
+for j := 0; j < 3; j = j + 1 {
+  io.println "For loop: {}", j
+}
+
+// Compound assignments
+count += 5
+io.println "count after +=: {}", count
+
+count *= 2
+io.println "count after *=: {}", count
+
+// Boolean logic
+let a := true
+let b := false
+
+if a or b {
+  io.println "At least one is true"
+}
+
+if not b {
+  io.println "b is false"
+}
+
+// Comparison operators
+if x == 42 {
+  io.println "x equals 42"
+}
+
+if x != 100 {
+  io.println "x does not equal 100"
+}
+
+if pi >= 3.0 and pi <= 3.2 {
+  io.println "pi is approximately 3.14"
+}
