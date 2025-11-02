@@ -52,6 +52,106 @@ static char *token_to_string(Token token) {
   return str;
 }
 
+// Forward declarations for expression parsing
+static AstNode *parse_expression(Parser *p);
+static AstNode *parse_equality(Parser *p);
+static AstNode *parse_comparison(Parser *p);
+static AstNode *parse_term(Parser *p);
+static AstNode *parse_factor(Parser *p);
+static AstNode *parse_unary(Parser *p);
+static AstNode *parse_call(Parser *p);
+static AstNode *parse_primary(Parser *p);
+
+// Expression parsing with precedence climbing
+// Precedence (lowest to highest):
+//   equality:     == !=
+//   comparison:   < <= > >=
+//   term:         + -
+//   factor:       * / %
+//   unary:        - !
+//   primary:      literals, identifiers, calls
+
+static AstNode *parse_expression(Parser *p) {
+  return parse_equality(p);
+}
+
+static AstNode *parse_equality(Parser *p) {
+  AstNode *expr = parse_comparison(p);
+  
+  while (match(p, TOKEN_EQUAL_EQUAL) || match(p, TOKEN_BANG_EQUAL)) {
+    Token op_token = p->previous;
+    BinaryOperator op = (op_token.type == TOKEN_EQUAL_EQUAL) ? BIN_EQ : BIN_NEQ;
+    AstNode *right = parse_comparison(p);
+    expr = ast_make_binary_op(op, expr, right, op_token.line, op_token.column);
+  }
+  
+  return expr;
+}
+
+static AstNode *parse_comparison(Parser *p) {
+  AstNode *expr = parse_term(p);
+  
+  while (match(p, TOKEN_LESS) || match(p, TOKEN_LESS_EQUAL) ||
+         match(p, TOKEN_GREATER) || match(p, TOKEN_GREATER_EQUAL)) {
+    Token op_token = p->previous;
+    BinaryOperator op;
+    switch (op_token.type) {
+      case TOKEN_LESS: op = BIN_LT; break;
+      case TOKEN_LESS_EQUAL: op = BIN_LTE; break;
+      case TOKEN_GREATER: op = BIN_GT; break;
+      case TOKEN_GREATER_EQUAL: op = BIN_GTE; break;
+      default: op = BIN_LT; break;  // Should never happen
+    }
+    AstNode *right = parse_term(p);
+    expr = ast_make_binary_op(op, expr, right, op_token.line, op_token.column);
+  }
+  
+  return expr;
+}
+
+static AstNode *parse_term(Parser *p) {
+  AstNode *expr = parse_factor(p);
+  
+  while (match(p, TOKEN_PLUS) || match(p, TOKEN_MINUS)) {
+    Token op_token = p->previous;
+    BinaryOperator op = (op_token.type == TOKEN_PLUS) ? BIN_ADD : BIN_SUB;
+    AstNode *right = parse_factor(p);
+    expr = ast_make_binary_op(op, expr, right, op_token.line, op_token.column);
+  }
+  
+  return expr;
+}
+
+static AstNode *parse_factor(Parser *p) {
+  AstNode *expr = parse_unary(p);
+  
+  while (match(p, TOKEN_STAR) || match(p, TOKEN_SLASH) || match(p, TOKEN_PERCENT)) {
+    Token op_token = p->previous;
+    BinaryOperator op;
+    switch (op_token.type) {
+      case TOKEN_STAR: op = BIN_MUL; break;
+      case TOKEN_SLASH: op = BIN_DIV; break;
+      case TOKEN_PERCENT: op = BIN_MOD; break;
+      default: op = BIN_MUL; break;  // Should never happen
+    }
+    AstNode *right = parse_unary(p);
+    expr = ast_make_binary_op(op, expr, right, op_token.line, op_token.column);
+  }
+  
+  return expr;
+}
+
+static AstNode *parse_unary(Parser *p) {
+  if (match(p, TOKEN_MINUS) || match(p, TOKEN_BANG)) {
+    Token op_token = p->previous;
+    UnaryOperator op = (op_token.type == TOKEN_MINUS) ? UNARY_NEG : UNARY_NOT;
+    AstNode *operand = parse_unary(p);  // Right-associative
+    return ast_make_unary_op(op, operand, op_token.line, op_token.column);
+  }
+  
+  return parse_call(p);
+}
+
 static AstNode *parse_primary(Parser *p) {
   if (match(p, TOKEN_STRING)) {
     // Strip quotes
@@ -104,14 +204,16 @@ static AstNode *parse_call(Parser *p) {
                                     p->previous.column);
       free(member);
     } else if (check(p, TOKEN_STRING) || check(p, TOKEN_INT) ||
-               check(p, TOKEN_FLOAT) || check(p, TOKEN_IDENTIFIER)) {
+               check(p, TOKEN_FLOAT) || check(p, TOKEN_IDENTIFIER) ||
+               check(p, TOKEN_MINUS) || check(p, TOKEN_BANG) ||
+               check(p, TOKEN_LEFT_PAREN)) {
       // Function call with arguments (comma-separated, no parens)
       int arg_capacity = 4;
       int arg_count = 0;
       AstNode **args = malloc(sizeof(AstNode *) * arg_capacity);
       
-      // Parse first argument
-      args[arg_count++] = parse_primary(p);
+      // Parse first argument as expression
+      args[arg_count++] = parse_expression(p);
       
       // Parse additional comma-separated arguments
       while (match(p, TOKEN_COMMA)) {
@@ -119,7 +221,7 @@ static AstNode *parse_call(Parser *p) {
           arg_capacity *= 2;
           args = realloc(args, sizeof(AstNode *) * arg_capacity);
         }
-        args[arg_count++] = parse_primary(p);
+        args[arg_count++] = parse_expression(p);
       }
       
       expr = ast_make_call(expr, args, arg_count, p->previous.line, p->previous.column);
@@ -152,14 +254,14 @@ static AstNode *parse_statement(Parser *p) {
     
     consume(p, TOKEN_COLON_EQUAL, "expected ':=' after variable name");
     
-    AstNode *value = parse_call(p);  // Parse the value expression
+    AstNode *value = parse_expression(p);  // Parse the value as expression
     AstNode *node = ast_make_let(name, value, line, column);
     free(name);
     return node;
   }
 
   // Expression statement
-  return parse_call(p);
+  return parse_expression(p);
 }
 
 void parser_init(Parser *parser, Lexer *lexer, const char *file_path) {

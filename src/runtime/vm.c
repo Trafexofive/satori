@@ -193,6 +193,146 @@ bool vm_run(VM *vm) {
       }
       break;
     }
+    
+    // Arithmetic operations
+    case OP_ADD: {
+      Value b = stack_pop(vm);
+      Value a = stack_pop(vm);
+      if (IS_INT(a) && IS_INT(b)) {
+        stack_push(vm, value_make_int(AS_INT(a) + AS_INT(b)));
+      } else {
+        f64 a_val = IS_INT(a) ? (f64)AS_INT(a) : AS_FLOAT(a);
+        f64 b_val = IS_INT(b) ? (f64)AS_INT(b) : AS_FLOAT(b);
+        stack_push(vm, value_make_float(a_val + b_val));
+      }
+      break;
+    }
+    
+    case OP_SUBTRACT: {
+      Value b = stack_pop(vm);
+      Value a = stack_pop(vm);
+      if (IS_INT(a) && IS_INT(b)) {
+        stack_push(vm, value_make_int(AS_INT(a) - AS_INT(b)));
+      } else {
+        f64 a_val = IS_INT(a) ? (f64)AS_INT(a) : AS_FLOAT(a);
+        f64 b_val = IS_INT(b) ? (f64)AS_INT(b) : AS_FLOAT(b);
+        stack_push(vm, value_make_float(a_val - b_val));
+      }
+      break;
+    }
+    
+    case OP_MULTIPLY: {
+      Value b = stack_pop(vm);
+      Value a = stack_pop(vm);
+      if (IS_INT(a) && IS_INT(b)) {
+        stack_push(vm, value_make_int(AS_INT(a) * AS_INT(b)));
+      } else {
+        f64 a_val = IS_INT(a) ? (f64)AS_INT(a) : AS_FLOAT(a);
+        f64 b_val = IS_INT(b) ? (f64)AS_INT(b) : AS_FLOAT(b);
+        stack_push(vm, value_make_float(a_val * b_val));
+      }
+      break;
+    }
+    
+    case OP_DIVIDE: {
+      Value b = stack_pop(vm);
+      Value a = stack_pop(vm);
+      f64 a_val = IS_INT(a) ? (f64)AS_INT(a) : AS_FLOAT(a);
+      f64 b_val = IS_INT(b) ? (f64)AS_INT(b) : AS_FLOAT(b);
+      if (b_val == 0.0) {
+        error_fatal("Division by zero");
+        return false;
+      }
+      stack_push(vm, value_make_float(a_val / b_val));
+      break;
+    }
+    
+    case OP_MODULO: {
+      Value b = stack_pop(vm);
+      Value a = stack_pop(vm);
+      if (!IS_INT(a) || !IS_INT(b)) {
+        error_fatal("Modulo requires integer operands");
+        return false;
+      }
+      if (AS_INT(b) == 0) {
+        error_fatal("Modulo by zero");
+        return false;
+      }
+      stack_push(vm, value_make_int(AS_INT(a) % AS_INT(b)));
+      break;
+    }
+    
+    case OP_NEGATE: {
+      Value a = stack_pop(vm);
+      if (IS_INT(a)) {
+        stack_push(vm, value_make_int(-AS_INT(a)));
+      } else if (IS_FLOAT(a)) {
+        stack_push(vm, value_make_float(-AS_FLOAT(a)));
+      } else {
+        error_fatal("Cannot negate non-numeric value");
+        return false;
+      }
+      break;
+    }
+    
+    // Comparison operations
+    case OP_EQUAL: {
+      Value b = stack_pop(vm);
+      Value a = stack_pop(vm);
+      stack_push(vm, value_make_bool(value_equal(a, b)));
+      break;
+    }
+    
+    case OP_NOT_EQUAL: {
+      Value b = stack_pop(vm);
+      Value a = stack_pop(vm);
+      stack_push(vm, value_make_bool(!value_equal(a, b)));
+      break;
+    }
+    
+    case OP_LESS: {
+      Value b = stack_pop(vm);
+      Value a = stack_pop(vm);
+      f64 a_val = value_to_float(a);
+      f64 b_val = value_to_float(b);
+      stack_push(vm, value_make_bool(a_val < b_val));
+      break;
+    }
+    
+    case OP_LESS_EQUAL: {
+      Value b = stack_pop(vm);
+      Value a = stack_pop(vm);
+      f64 a_val = value_to_float(a);
+      f64 b_val = value_to_float(b);
+      stack_push(vm, value_make_bool(a_val <= b_val));
+      break;
+    }
+    
+    case OP_GREATER: {
+      Value b = stack_pop(vm);
+      Value a = stack_pop(vm);
+      f64 a_val = value_to_float(a);
+      f64 b_val = value_to_float(b);
+      stack_push(vm, value_make_bool(a_val > b_val));
+      break;
+    }
+    
+    case OP_GREATER_EQUAL: {
+      Value b = stack_pop(vm);
+      Value a = stack_pop(vm);
+      f64 a_val = value_to_float(a);
+      f64 b_val = value_to_float(b);
+      stack_push(vm, value_make_bool(a_val >= b_val));
+      break;
+    }
+    
+    case OP_NOT: {
+      Value a = stack_pop(vm);
+      // In Satori, only false and nil are falsy
+      bool is_truthy = !(IS_NIL(a) || (IS_BOOL(a) && !AS_BOOL(a)));
+      stack_push(vm, value_make_bool(!is_truthy));
+      break;
+    }
 
     case OP_PRINT: {
       // Deprecated built-in print - for backwards compatibility

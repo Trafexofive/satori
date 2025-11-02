@@ -36,6 +36,27 @@ AstNode *ast_make_let(char *name, AstNode *value, int line, int column) {
   return node;
 }
 
+AstNode *ast_make_binary_op(BinaryOperator op, AstNode *left, AstNode *right, int line, int column) {
+  AstNode *node = malloc(sizeof(AstNode));
+  node->type = AST_BINARY_OP;
+  node->line = line;
+  node->column = column;
+  node->as.binary_op.op = op;
+  node->as.binary_op.left = left;
+  node->as.binary_op.right = right;
+  return node;
+}
+
+AstNode *ast_make_unary_op(UnaryOperator op, AstNode *operand, int line, int column) {
+  AstNode *node = malloc(sizeof(AstNode));
+  node->type = AST_UNARY_OP;
+  node->line = line;
+  node->column = column;
+  node->as.unary_op.op = op;
+  node->as.unary_op.operand = operand;
+  return node;
+}
+
 AstNode *ast_make_call(AstNode *callee, AstNode **args, int arg_count, int line,
                        int column) {
   AstNode *node = malloc(sizeof(AstNode));
@@ -124,6 +145,13 @@ void ast_free(AstNode *node) {
     free(node->as.let.name);
     ast_free(node->as.let.value);
     break;
+  case AST_BINARY_OP:
+    ast_free(node->as.binary_op.left);
+    ast_free(node->as.binary_op.right);
+    break;
+  case AST_UNARY_OP:
+    ast_free(node->as.unary_op.operand);
+    break;
   case AST_CALL:
     ast_free(node->as.call.callee);
     for (int i = 0; i < node->as.call.arg_count; i++) {
@@ -169,6 +197,19 @@ void ast_print(AstNode *node, int indent) {
     printf("Let: %s :=\n", node->as.let.name);
     ast_print(node->as.let.value, indent + 1);
     break;
+  case AST_BINARY_OP: {
+    const char *op_str[] = {"+", "-", "*", "/", "%", "==", "!=", "<", "<=", ">", ">="};
+    printf("BinaryOp: %s\n", op_str[node->as.binary_op.op]);
+    ast_print(node->as.binary_op.left, indent + 1);
+    ast_print(node->as.binary_op.right, indent + 1);
+    break;
+  }
+  case AST_UNARY_OP: {
+    const char *op_str[] = {"-", "!"};
+    printf("UnaryOp: %s\n", op_str[node->as.unary_op.op]);
+    ast_print(node->as.unary_op.operand, indent + 1);
+    break;
+  }
   case AST_CALL:
     printf("Call\n");
     ast_print(node->as.call.callee, indent + 1);

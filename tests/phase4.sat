@@ -1,0 +1,15 @@
+import io
+
+io.println "Phase 4: Arithmetic"
+io.println ""
+
+let x := 10
+let y := 3
+
+io.println "Add: {} + {} = {}", x, y, x + y
+io.println "Precedence: 2 + 3 * 4 = {}", 2 + 3 * 4
+io.println "Compare: 10 > 3 = {}", 10 > 3
+io.println "Equal: 5 == 5 = {}", 5 == 5
+
+io.println ""
+io.println "Phase 4 Complete!"

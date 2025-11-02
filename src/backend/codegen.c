@@ -148,6 +148,40 @@ static void compile_node(Compiler *c, AstNode *node) {
     }
     break;
   }
+  
+  case AST_BINARY_OP: {
+    // Compile left and right operands
+    compile_node(c, node->as.binary_op.left);
+    compile_node(c, node->as.binary_op.right);
+    
+    // Emit the operation
+    switch (node->as.binary_op.op) {
+      case BIN_ADD: emit_byte(c, OP_ADD); break;
+      case BIN_SUB: emit_byte(c, OP_SUBTRACT); break;
+      case BIN_MUL: emit_byte(c, OP_MULTIPLY); break;
+      case BIN_DIV: emit_byte(c, OP_DIVIDE); break;
+      case BIN_MOD: emit_byte(c, OP_MODULO); break;
+      case BIN_EQ:  emit_byte(c, OP_EQUAL); break;
+      case BIN_NEQ: emit_byte(c, OP_NOT_EQUAL); break;
+      case BIN_LT:  emit_byte(c, OP_LESS); break;
+      case BIN_LTE: emit_byte(c, OP_LESS_EQUAL); break;
+      case BIN_GT:  emit_byte(c, OP_GREATER); break;
+      case BIN_GTE: emit_byte(c, OP_GREATER_EQUAL); break;
+    }
+    break;
+  }
+  
+  case AST_UNARY_OP: {
+    // Compile the operand
+    compile_node(c, node->as.unary_op.operand);
+    
+    // Emit the operation
+    switch (node->as.unary_op.op) {
+      case UNARY_NEG: emit_byte(c, OP_NEGATE); break;
+      case UNARY_NOT: emit_byte(c, OP_NOT); break;
+    }
+    break;
+  }
 
   case AST_CALL: {
     compile_call(c, node);

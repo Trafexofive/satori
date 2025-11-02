@@ -16,6 +16,24 @@ typedef enum {
   OP_CALL_NATIVE,   // Call native function
   OP_IMPORT,        // Import module
   OP_GET_MEMBER,    // Get member from object
+  
+  // Arithmetic operations
+  OP_ADD,           // +
+  OP_SUBTRACT,      // -
+  OP_MULTIPLY,      // *
+  OP_DIVIDE,        // /
+  OP_MODULO,        // %
+  OP_NEGATE,        // unary -
+  
+  // Comparison operations
+  OP_EQUAL,         // ==
+  OP_NOT_EQUAL,     // !=
+  OP_LESS,          // <
+  OP_LESS_EQUAL,    // <=
+  OP_GREATER,       // >
+  OP_GREATER_EQUAL, // >=
+  OP_NOT,           // unary !
+  
   OP_PRINT,         // Built-in print (deprecated, use io.println)
   OP_RETURN,        // Return from function
   OP_HALT,          // Stop execution
