@@ -22,14 +22,12 @@ io.println "After append: {}", numbers
 
 // Array iteration
 io.println "All numbers:"
-for num in numbers {
+for num in numbers
   io.println "  {}", num
-}
 
 io.println "All names:"
-for i, name in names {
+for i, name in names
   io.println "  {}: {}", i, name
-}
 
 // Array slicing
 let slice := numbers[1:4]  // [2, 3, 4]
@@ -43,10 +41,11 @@ let max := numbers.max()
 io.println "Max: {}", max
 
 // Map and filter (higher-order functions)
-let doubled := numbers.map(fn(x) -> x * 2)
+// Note: Lambda syntax TBD - using placeholder syntax
+let doubled := numbers.map(|x| x * 2)
 io.println "Doubled: {}", doubled
 
-let evens := numbers.filter(fn(x) -> x % 2 == 0)
+let evens := numbers.filter(|x| x % 2 == 0)
 io.println "Even numbers: {}", evens
 
 // Hash map / dictionary
@@ -62,14 +61,12 @@ scores["David"] = 88
 io.println "After adding David: {}", scores
 
 // Check if key exists
-if "Alice" in scores {
+if "Alice" in scores
   io.println "Alice is in the scores"
-}
 
 // Iterate over map
-for name, score in scores {
+for name, score in scores
   io.println "{}: {}", name, score
-}
 
 // Error handling with 'or' operator
 let content := fs.read_file("data.txt") or {
@@ -80,12 +77,10 @@ let content := fs.read_file("data.txt") or {
 io.println "File content: {}", content
 
 // Error handling with explicit error type
-fn divide(a: int, b: int) -> int or error {
-  if b == 0 {
+int divide(int a, int b) or error
+  if b == 0
     return error("Division by zero")
-  }
   return a / b
-}
 
 let result := divide(10, 2) or {
   io.println "Division failed"
@@ -100,13 +95,12 @@ let bad_result := divide(10, 0) or {
 }
 
 // Defer for cleanup
-fn process_file(filename: string) {
+void process_file(string filename)
   let file := fs.open(filename) or return
   defer file.close()  // Will execute when function returns
   
   let data := file.read()
   io.println "File data: {}", data
-}
 
 // Match expressions (pattern matching)
 let value := 42
@@ -149,32 +143,27 @@ io.println "Project: {}", data["name"]
 io.println "Version: {}", data["version"]
 
 // Concurrency (spawn and channels)
-fn worker(id: int, jobs: chan int, results: chan int) {
-  for job in jobs {
+void worker(int id, chan int jobs, chan int results)
+  for job in jobs
     io.println "Worker {} processing job {}", id, job
     results <- job * 2
-  }
-}
 
 let jobs := make(chan int, 10)
 let results := make(chan int, 10)
 
 // Spawn 3 workers
-for w := 1; w <= 3; w = w + 1 {
+for w := 1; w <= 3; w = w + 1
   spawn worker(w, jobs, results)
-}
 
 // Send 5 jobs
-for j := 1; j <= 5; j = j + 1 {
+for j := 1; j <= 5; j = j + 1
   jobs <- j
-}
 close(jobs)
 
 // Collect results
-for i := 1; i <= 5; i = i + 1 {
+for i := 1; i <= 5; i = i + 1
   let result := <-results
   io.println "Result: {}", result
-}
 
 // String methods
 let text := "  Hello, Satori!  "

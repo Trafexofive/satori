@@ -31,28 +31,24 @@ io.println "division = {}", division
 io.println "modulo = {}", modulo
 
 // If-else statements
-if x > 40 {
+if x > 40
   io.println "x is greater than 40"
-} else {
+else
   io.println "x is not greater than 40"
-}
 
 // If with multiple conditions
-if x > 30 and x < 50 {
+if x > 30 and x < 50
   io.println "x is between 30 and 50"
-}
 
 // While loop
 let i := 0
-while i < 5 {
+while i < 5
   io.println "Iteration: {}", i
   i = i + 1
-}
 
 // For loop
-for j := 0; j < 3; j = j + 1 {
+for j := 0; j < 3; j = j + 1
   io.println "For loop: {}", j
-}
 
 // Compound assignments
 count += 5
@@ -65,23 +61,18 @@ io.println "count after *=: {}", count
 let a := true
 let b := false
 
-if a or b {
+if a or b
   io.println "At least one is true"
-}
 
-if not b {
+if not b
   io.println "b is false"
-}
 
 // Comparison operators
-if x == 42 {
+if x == 42
   io.println "x equals 42"
-}
 
-if x != 100 {
+if x != 100
   io.println "x does not equal 100"
-}
 
-if pi >= 3.0 and pi <= 3.2 {
+if pi >= 3.0 and pi <= 3.2
   io.println "pi is approximately 3.14"
-}
