@@ -46,7 +46,8 @@ AstNode *ast_make_assignment(char *name, AstNode *value, int line, int column) {
   return node;
 }
 
-AstNode *ast_make_binary_op(BinaryOperator op, AstNode *left, AstNode *right, int line, int column) {
+AstNode *ast_make_binary_op(BinaryOperator op, AstNode *left, AstNode *right,
+                            int line, int column) {
   AstNode *node = malloc(sizeof(AstNode));
   node->type = AST_BINARY_OP;
   node->line = line;
@@ -57,7 +58,8 @@ AstNode *ast_make_binary_op(BinaryOperator op, AstNode *left, AstNode *right, in
   return node;
 }
 
-AstNode *ast_make_unary_op(UnaryOperator op, AstNode *operand, int line, int column) {
+AstNode *ast_make_unary_op(UnaryOperator op, AstNode *operand, int line,
+                           int column) {
   AstNode *node = malloc(sizeof(AstNode));
   node->type = AST_UNARY_OP;
   node->line = line;
@@ -67,7 +69,8 @@ AstNode *ast_make_unary_op(UnaryOperator op, AstNode *operand, int line, int col
   return node;
 }
 
-AstNode *ast_make_if(AstNode *condition, AstNode *then_branch, AstNode *else_branch, int line, int column) {
+AstNode *ast_make_if(AstNode *condition, AstNode *then_branch,
+                     AstNode *else_branch, int line, int column) {
   AstNode *node = malloc(sizeof(AstNode));
   node->type = AST_IF;
   node->line = line;
@@ -78,7 +81,8 @@ AstNode *ast_make_if(AstNode *condition, AstNode *then_branch, AstNode *else_bra
   return node;
 }
 
-AstNode *ast_make_while(AstNode *condition, AstNode *body, int line, int column) {
+AstNode *ast_make_while(AstNode *condition, AstNode *body, int line,
+                        int column) {
   AstNode *node = malloc(sizeof(AstNode));
   node->type = AST_WHILE;
   node->line = line;
@@ -128,9 +132,9 @@ void ast_block_add_statement(AstNode *block, AstNode *statement) {
   if (block->as.block.capacity < block->as.block.statement_count + 1) {
     int old_capacity = block->as.block.capacity;
     block->as.block.capacity = old_capacity < 8 ? 8 : old_capacity * 2;
-    block->as.block.statements = realloc(
-        block->as.block.statements,
-        sizeof(AstNode *) * block->as.block.capacity);
+    block->as.block.statements =
+        realloc(block->as.block.statements,
+                sizeof(AstNode *) * block->as.block.capacity);
   }
   block->as.block.statements[block->as.block.statement_count++] = statement;
 }
@@ -191,6 +195,15 @@ AstNode *ast_make_float_literal(f64 value, int line, int column) {
   node->line = line;
   node->column = column;
   node->as.float_literal.value = value;
+  return node;
+}
+
+AstNode *ast_make_bool_literal(bool value, int line, int column) {
+  AstNode *node = malloc(sizeof(AstNode));
+  node->type = AST_BOOL_LITERAL;
+  node->line = line;
+  node->column = column;
+  node->as.bool_literal.value = value;
   return node;
 }
 
@@ -272,6 +285,9 @@ void ast_free(AstNode *node) {
   case AST_IDENTIFIER:
     free(node->as.identifier.name);
     break;
+  case AST_BOOL_LITERAL:
+    // No dynamic memory to free
+    break;
   case AST_STRING_LITERAL:
     free(node->as.string_literal.value);
     break;
@@ -286,101 +302,136 @@ void ast_print(AstNode *node, int indent) {
   if (!node)
     return;
 
-  for (int i = 0; i < indent; i++)
-    printf("  ");
+  for (int i = 0; i < indent; i++) {
+    if (i == indent - 1)
+      printf("├─ ");
+    else
+      printf("│  ");
+  }
 
   switch (node->type) {
   case AST_PROGRAM:
-    printf("Program\n");
+    printf("📋 Program\n");
     for (int i = 0; i < node->as.program.statement_count; i++) {
       ast_print(node->as.program.statements[i], indent + 1);
     }
     break;
   case AST_IMPORT:
-    printf("Import: %s\n", node->as.import.module_name);
+    printf("📦 Import: \033[36m%s\033[0m\n", node->as.import.module_name);
     break;
   case AST_LET:
-    printf("Let: %s :=\n", node->as.let.name);
+    printf("🔧 Let: \033[33m%s\033[0m :=\n", node->as.let.name);
     ast_print(node->as.let.value, indent + 1);
     break;
   case AST_ASSIGNMENT:
-    printf("Assignment: %s =\n", node->as.assignment.name);
+    printf("📝 Assignment: \033[33m%s\033[0m =\n", node->as.assignment.name);
     ast_print(node->as.assignment.value, indent + 1);
     break;
   case AST_BINARY_OP: {
-    const char *op_str[] = {"+", "-", "*", "/", "%", "==", "!=", "<", "<=", ">", ">="};
-    printf("BinaryOp: %s\n", op_str[node->as.binary_op.op]);
+    const char *op_str[] = {
+        "+", "-", "*", "/", "%", "==", "!=", "<", "<=", ">", ">="};
+    printf("⚙️  BinaryOp: \033[35m%s\033[0m\n", op_str[node->as.binary_op.op]);
     ast_print(node->as.binary_op.left, indent + 1);
     ast_print(node->as.binary_op.right, indent + 1);
     break;
   }
   case AST_UNARY_OP: {
     const char *op_str[] = {"-", "!"};
-    printf("UnaryOp: %s\n", op_str[node->as.unary_op.op]);
+    printf("⚙️  UnaryOp: \033[35m%s\033[0m\n", op_str[node->as.unary_op.op]);
     ast_print(node->as.unary_op.operand, indent + 1);
     break;
   }
   case AST_IF:
-    printf("If\n");
-    for (int i = 0; i < indent + 1; i++) printf("  ");
-    printf("Condition:\n");
+    printf("🔀 If\n");
+    for (int i = 0; i <= indent; i++) {
+      if (i == indent)
+        printf("├─ ");
+      else
+        printf("│  ");
+    }
+    printf("\033[32mCondition:\033[0m\n");
     ast_print(node->as.if_stmt.condition, indent + 2);
-    for (int i = 0; i < indent + 1; i++) printf("  ");
-    printf("Then:\n");
+    for (int i = 0; i <= indent; i++) {
+      if (i == indent)
+        printf("├─ ");
+      else
+        printf("│  ");
+    }
+    printf("\033[32mThen:\033[0m\n");
     ast_print(node->as.if_stmt.then_branch, indent + 2);
     if (node->as.if_stmt.else_branch) {
-      for (int i = 0; i < indent + 1; i++) printf("  ");
-      printf("Else:\n");
+      for (int i = 0; i <= indent; i++) {
+        if (i == indent)
+          printf("└─ ");
+        else
+          printf("│  ");
+      }
+      printf("\033[32mElse:\033[0m\n");
       ast_print(node->as.if_stmt.else_branch, indent + 2);
     }
     break;
   case AST_WHILE:
-    printf("While\n");
-    for (int i = 0; i < indent + 1; i++) printf("  ");
-    printf("Condition:\n");
+    printf("🔁 While\n");
+    for (int i = 0; i <= indent; i++) {
+      if (i == indent)
+        printf("├─ ");
+      else
+        printf("│  ");
+    }
+    printf("\033[32mCondition:\033[0m\n");
     ast_print(node->as.while_loop.condition, indent + 2);
-    for (int i = 0; i < indent + 1; i++) printf("  ");
-    printf("Body:\n");
+    for (int i = 0; i <= indent; i++) {
+      if (i == indent)
+        printf("└─ ");
+      else
+        printf("│  ");
+    }
+    printf("\033[32mBody:\033[0m\n");
     ast_print(node->as.while_loop.body, indent + 2);
     break;
   case AST_LOOP:
-    printf("Loop\n");
+    printf("🔄 Loop\n");
     ast_print(node->as.loop.body, indent + 1);
     break;
   case AST_BREAK:
-    printf("Break\n");
+    printf("🛑 Break\n");
     break;
   case AST_CONTINUE:
-    printf("Continue\n");
+    printf("⏭️  Continue\n");
     break;
   case AST_BLOCK:
-    printf("Block\n");
+    printf("{ Block }\n");
     for (int i = 0; i < node->as.block.statement_count; i++) {
       ast_print(node->as.block.statements[i], indent + 1);
     }
     break;
   case AST_CALL:
-    printf("Call\n");
+    printf("📞 Call\n");
     ast_print(node->as.call.callee, indent + 1);
     for (int i = 0; i < node->as.call.arg_count; i++) {
       ast_print(node->as.call.args[i], indent + 1);
     }
     break;
   case AST_MEMBER_ACCESS:
-    printf("MemberAccess: .%s\n", node->as.member_access.member);
+    printf("🔗 MemberAccess: \033[34m.%s\033[0m\n",
+           node->as.member_access.member);
     ast_print(node->as.member_access.object, indent + 1);
     break;
   case AST_IDENTIFIER:
-    printf("Identifier: %s\n", node->as.identifier.name);
+    printf("🏷️  Identifier: \033[33m%s\033[0m\n", node->as.identifier.name);
+    break;
+  case AST_BOOL_LITERAL:
+    printf("🎯 Bool: \033[35m%s\033[0m\n",
+           node->as.bool_literal.value ? "true" : "false");
     break;
   case AST_STRING_LITERAL:
-    printf("String: %s\n", node->as.string_literal.value);
+    printf("📝 String: \033[32m\"%s\"\033[0m\n", node->as.string_literal.value);
     break;
   case AST_INT_LITERAL:
-    printf("Int: %ld\n", node->as.int_literal.value);
+    printf("🔢 Int: \033[36m%ld\033[0m\n", node->as.int_literal.value);
     break;
   case AST_FLOAT_LITERAL:
-    printf("Float: %f\n", node->as.float_literal.value);
+    printf("🔢 Float: \033[36m%f\033[0m\n", node->as.float_literal.value);
     break;
   }
 }

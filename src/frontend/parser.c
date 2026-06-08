@@ -183,6 +183,14 @@ static AstNode *parse_primary(Parser *p) {
     return ast_make_float_literal(value, p->previous.line, p->previous.column);
   }
 
+  if (match(p, TOKEN_TRUE)) {
+    return ast_make_bool_literal(true, p->previous.line, p->previous.column);
+  }
+
+  if (match(p, TOKEN_FALSE)) {
+    return ast_make_bool_literal(false, p->previous.line, p->previous.column);
+  }
+
   if (match(p, TOKEN_IDENTIFIER)) {
     char *name = token_to_string(p->previous);
     AstNode *node =
@@ -208,6 +216,7 @@ static AstNode *parse_call(Parser *p) {
       free(member);
     } else if (check(p, TOKEN_STRING) || check(p, TOKEN_INT) ||
                check(p, TOKEN_FLOAT) || check(p, TOKEN_IDENTIFIER) ||
+               check(p, TOKEN_TRUE) || check(p, TOKEN_FALSE) ||
                check(p, TOKEN_LEFT_PAREN)) {
       // Function call with arguments (comma-separated, no parens)
       // Note: TOKEN_MINUS and TOKEN_BANG excluded here because

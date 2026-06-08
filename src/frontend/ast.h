@@ -23,6 +23,7 @@ typedef enum {
   AST_MEMBER_ACCESS,
   AST_IDENTIFIER,
   AST_STRING_LITERAL,
+  AST_BOOL_LITERAL,
   AST_INT_LITERAL,
   AST_FLOAT_LITERAL,
 } AstNodeType;
@@ -114,6 +115,10 @@ typedef struct {
 } AstStringLiteral;
 
 typedef struct {
+  bool value;
+} AstBoolLiteral;
+
+typedef struct {
   i64 value;
 } AstIntLiteral;
 
@@ -146,6 +151,7 @@ struct AstNode {
     AstMemberAccess member_access;
     AstIdentifier identifier;
     AstStringLiteral string_literal;
+    AstBoolLiteral bool_literal;
     AstIntLiteral int_literal;
     AstFloatLiteral float_literal;
   } as;
@@ -170,6 +176,7 @@ AstNode *ast_make_call(AstNode *callee, AstNode **args, int arg_count, int line,
 AstNode *ast_make_member_access(AstNode *object, char *member, int line,
                                 int column);
 AstNode *ast_make_identifier(char *name, int line, int column);
+AstNode *ast_make_bool_literal(bool value, int line, int column);
 AstNode *ast_make_string_literal(char *value, int line, int column);
 AstNode *ast_make_int_literal(i64 value, int line, int column);
 AstNode *ast_make_float_literal(f64 value, int line, int column);

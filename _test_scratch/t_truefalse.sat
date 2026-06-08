@@ -1,0 +1,4 @@
+// test: true/false boolean literals
+import io
+io.println true
+io.println false

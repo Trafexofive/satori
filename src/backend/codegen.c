@@ -340,6 +340,13 @@ static void compile_node(Compiler *c, AstNode *node) {
         break;
     }
 
+    case AST_BOOL_LITERAL: {
+      int constant = make_constant(
+          c, value_make_bool(node->as.bool_literal.value));
+      emit_bytes(c, OP_CONSTANT, constant);
+      break;
+    }
+
     case AST_STRING_LITERAL: {
         int constant =
             make_constant(c, value_make_string(node->as.string_literal.value));
