@@ -1,0 +1,6 @@
+// test: variable assignment with =
+import io
+let x := 5
+io.println x
+x = 10
+io.println x

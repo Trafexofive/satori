@@ -1,5 +1,7 @@
 // src/parser.c - Recursive descent parser
 
+#define _POSIX_C_SOURCE 200809L
+
 #include "frontend/parser.h"
 #include "error/error.h"
 #include <stdio.h>
@@ -77,7 +79,25 @@ static AstNode *parse_primary(Parser *p);
 //   primary:      literals, identifiers, calls
 
 static AstNode *parse_expression(Parser *p) {
-  return parse_equality(p);
+  AstNode *expr = parse_equality(p);
+
+  // Handle assignment: identifier = value
+  if (match(p, TOKEN_EQUAL)) {
+    if (expr->type != AST_IDENTIFIER) {
+      parser_error(p, "cannot assign to non-variable");
+      return expr;
+    }
+    AstNode *value = parse_expression(p);
+    AstNode *node = ast_make_assignment(
+        strdup(expr->as.identifier.name), value,
+        p->previous.line, p->previous.column);
+    // Free the original identifier node since we extracted its name
+    free(expr->as.identifier.name);
+    free(expr);
+    return node;
+  }
+
+  return expr;
 }
 
 static AstNode *parse_equality(Parser *p) {
