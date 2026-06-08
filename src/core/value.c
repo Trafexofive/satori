@@ -8,6 +8,14 @@
 #include <string.h>
 #include <stdlib.h>
 
+bool value_is_truthy(Value v) {
+  switch (v.type) {
+    case VALUE_NIL:    return false;
+    case VALUE_BOOL:   return v.u.as_bool;
+    default:           return true;  // All other values are truthy
+  }
+}
+
 Value value_make_nil(void) {
   Value v;
   v.type = VALUE_NIL;

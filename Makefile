@@ -10,7 +10,7 @@ BIN_DIR = bin
 TARGET = $(BIN_DIR)/satori
 
 # Source files by module
-CORE_SRCS = $(SRC_DIR)/core/value.c $(SRC_DIR)/core/object.c $(SRC_DIR)/core/memory.c $(SRC_DIR)/core/table.c
+CORE_SRCS = $(SRC_DIR)/core/value.c $(SRC_DIR)/core/object.c $(SRC_DIR)/core/memory.c $(SRC_DIR)/core/table.c $(SRC_DIR)/core/source.c
 FRONTEND_SRCS = $(SRC_DIR)/frontend/lexer.c $(SRC_DIR)/frontend/parser.c $(SRC_DIR)/frontend/ast.c $(SRC_DIR)/frontend/typechecker.c
 BACKEND_SRCS = $(SRC_DIR)/backend/codegen.c
 RUNTIME_SRCS = $(SRC_DIR)/runtime/vm.c $(SRC_DIR)/runtime/module.c

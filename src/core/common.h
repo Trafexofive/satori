@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 // Version
 #define SATORI_VERSION_MAJOR 0
@@ -48,15 +50,18 @@ typedef double f64;
 
 #define UNREACHABLE()                                                          \
   do {                                                                         \
-    fprintf(stderr, "Unreachable code at %s:%d\n", __FILE__, __LINE__);        \
+    fprintf(stderr,                                                             \
+      "\033[1;31merror:\033[0m internal error: unreachable code at %s:%d\n",  \
+      __FILE__, __LINE__);                                                     \
     abort();                                                                   \
   } while (0)
 
 #define ASSERT(cond, msg)                                                      \
   do {                                                                         \
     if (!(cond)) {                                                             \
-      fprintf(stderr, "Assertion failed: %s at %s:%d\n", msg, __FILE__,        \
-              __LINE__);                                                       \
+      fprintf(stderr,                                                          \
+        "\033[1;31merror:\033[0m assertion failed: %s at %s:%d\n",            \
+        msg, __FILE__, __LINE__);                                              \
       abort();                                                                 \
     }                                                                          \
   } while (0)

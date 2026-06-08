@@ -5,7 +5,8 @@
 
 #include "frontend/ast.h"
 #include "runtime/vm.h"
+#include "core/source.h"
 
-bool codegen_compile(AstNode *ast, Chunk *chunk);
+bool codegen_compile(AstNode *ast, Chunk *chunk, SourceInfo *source);
 
 #endif // SATORI_CODEGEN_H

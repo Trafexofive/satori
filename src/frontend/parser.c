@@ -6,6 +6,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+static void parser_error(Parser *p, const char *message) {
+  diag_emit(LEVEL_ERROR, p->file_path,
+            p->current.line, p->current.column, p->current.length,
+            message,
+            p->source, NULL, 0);
+  p->had_error = true;
+}
+
 static void advance(Parser *p) {
   p->previous = p->current;
 
@@ -14,9 +22,7 @@ static void advance(Parser *p) {
     if (p->current.type != TOKEN_ERROR)
       break;
 
-    error_report(p->file_path, p->current.line, p->current.column, "%.*s",
-                 p->current.length, p->current.start);
-    p->had_error = true;
+    parser_error(p, "lexer error");
   }
 }
 
@@ -41,8 +47,7 @@ static void consume(Parser *p, TokenType type, const char *message) {
     return;
   }
 
-  error_report(p->file_path, p->current.line, p->current.column, "%s", message);
-  p->had_error = true;
+  parser_error(p, message);
 }
 
 static char *token_to_string(Token token) {
@@ -186,9 +191,7 @@ static AstNode *parse_primary(Parser *p) {
     return node;
   }
 
-  error_report(p->file_path, p->current.line, p->current.column,
-               "expected expression");
-  p->had_error = true;
+  parser_error(p, "expected expression");
   return NULL;
 }
 
@@ -321,7 +324,12 @@ void parser_init(Parser *parser, Lexer *lexer, const char *file_path) {
   parser->had_error = false;
   parser->panic_mode = false;
   parser->file_path = file_path;
+  parser->source = NULL;
   advance(parser);
+}
+
+void parser_set_source(Parser *parser, SourceInfo *source) {
+  parser->source = source;
 }
 
 AstNode *parser_parse(Parser *parser) {

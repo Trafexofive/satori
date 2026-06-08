@@ -7,7 +7,7 @@
 void *mem_alloc(size_t size) {
   void *ptr = malloc(size);
   if (ptr == NULL && size > 0) {
-    fprintf(stderr, "Fatal: Out of memory\n");
+    fprintf(stderr, "\033[1;31merror:\033[0m out of memory\n");
     exit(1);
   }
   return ptr;
@@ -21,7 +21,7 @@ void *mem_realloc(void *ptr, size_t new_size) {
   
   void *result = realloc(ptr, new_size);
   if (result == NULL) {
-    fprintf(stderr, "Fatal: Out of memory\n");
+    fprintf(stderr, "\033[1;31merror:\033[0m out of memory\n");
     exit(1);
   }
   return result;

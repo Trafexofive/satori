@@ -64,9 +64,10 @@ Value value_make_obj(Object *obj);
 
 // Value operations
 bool value_equal(Value a, Value b);
-f64 value_to_float(Value v);  // Convert int or float to float
+bool value_is_truthy(Value v);   // nil and false are falsy, everything else truthy
+f64 value_to_float(Value v);     // Convert int or float to float
 void value_print(Value value);
-void value_free(Value value);  // Free if needed
+void value_free(Value value);    // Free if needed
 
 // Constants
 #define NIL_VAL         value_make_nil()

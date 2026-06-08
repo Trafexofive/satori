@@ -7,6 +7,7 @@
 #include "string.h"
 #include "runtime/module.h"
 #include "core/value.h"
+#include "error/error.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -15,12 +16,14 @@
 // string.to_upper - Convert string to uppercase
 Value native_string_to_upper(int arg_count, Value *args) {
   if (arg_count != 1) {
-    fprintf(stderr, "Error: to_upper expects 1 argument, got %d\n", arg_count);
+    char buf[256];
+    snprintf(buf, sizeof(buf), "to_upper expects 1 argument, got %d", arg_count);
+    diag_emit(LEVEL_ERROR, NULL, 0, 0, 0, buf, NULL, NULL, 0);
     return value_make_nil();
   }
   
   if (!IS_STRING(args[0])) {
-    fprintf(stderr, "Error: to_upper expects string argument\n");
+    diag_emit(LEVEL_ERROR, NULL, 0, 0, 0, "to_upper expects string argument", NULL, NULL, 0);
     return value_make_nil();
   }
   
@@ -42,12 +45,14 @@ Value native_string_to_upper(int arg_count, Value *args) {
 // string.to_lower - Convert string to lowercase
 Value native_string_to_lower(int arg_count, Value *args) {
   if (arg_count != 1) {
-    fprintf(stderr, "Error: to_lower expects 1 argument, got %d\n", arg_count);
+    char buf[256];
+    snprintf(buf, sizeof(buf), "to_lower expects 1 argument, got %d", arg_count);
+    diag_emit(LEVEL_ERROR, NULL, 0, 0, 0, buf, NULL, NULL, 0);
     return value_make_nil();
   }
   
   if (!IS_STRING(args[0])) {
-    fprintf(stderr, "Error: to_lower expects string argument\n");
+    diag_emit(LEVEL_ERROR, NULL, 0, 0, 0, "to_lower expects string argument", NULL, NULL, 0);
     return value_make_nil();
   }
   

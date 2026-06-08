@@ -5,6 +5,7 @@
 #include "module.h"
 #include "vm.h"
 #include "core/table.h"
+#include "error/error.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -46,7 +47,11 @@ bool module_load(VM *vm, const char *name) {
   }
   
   // Module not found
-  fprintf(stderr, "Error: Unknown module '%s'\n", name);
+  diag_emit(LEVEL_ERROR, vm->has_source ? vm->source_info.file_path : NULL,
+            vm_current_line(vm), 0, 0,
+            "Unknown module",
+            vm->has_source ? &vm->source_info : NULL,
+            (const char *[]){"help: available modules are `io` and `string`"}, 1);
   return false;
 }
 
