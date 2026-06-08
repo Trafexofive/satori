@@ -1,0 +1,8 @@
+// test: break with block body
+import io
+let i := 0
+loop {
+    if i >= 5 then break
+    io.println i
+    i = i + 1
+}

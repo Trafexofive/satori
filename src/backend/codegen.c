@@ -27,6 +27,12 @@ typedef struct {
     // Local variables
     Local locals[SATORI_MAX_LOCALS];
     int local_count;
+
+    // Loop context for break/continue
+    int loop_start;             // Bytecode offset of current loop (or -1)
+    int *break_jumps;           // Jump offsets to patch at loop end
+    int break_jump_count;
+    int break_jump_capacity;
 } Compiler;
 
 static void emit_byte(Compiler *c, u8 byte) {
@@ -274,45 +280,106 @@ static void compile_node(Compiler *c, AstNode *node) {
     }
 
     case AST_WHILE: {
-        int loop_start = c->chunk->count;
+        // Save outer loop context for nesting
+        int saved_start = c->loop_start;
+        int saved_break_count = c->break_jump_count;
+        int saved_break_cap = c->break_jump_capacity;
+        int *saved_breaks = c->break_jumps;
+
+        c->loop_start = c->chunk->count;
+        c->break_jumps = NULL;
+        c->break_jump_count = 0;
+        c->break_jump_capacity = 0;
+
         compile_node(c, node->as.while_loop.condition);
         int exit_jump = emit_jump(c, OP_JUMP_IF_FALSE);
         emit_byte(c, OP_POP);
         compile_node(c, node->as.while_loop.body);
-        emit_loop(c, loop_start);
+        emit_loop(c, c->loop_start);
         patch_jump(c, exit_jump);
         emit_byte(c, OP_POP);
+
+        // Patch all breaks collected during this loop
+        for (int i = 0; i < c->break_jump_count; i++) {
+            patch_jump(c, c->break_jumps[i]);
+        }
+        free(c->break_jumps);
+
+        // Restore outer context
+        c->loop_start = saved_start;
+        c->break_jumps = saved_breaks;
+        c->break_jump_count = saved_break_count;
+        c->break_jump_capacity = saved_break_cap;
         break;
     }
 
     case AST_LOOP: {
-        int loop_start = c->chunk->count;
+        // Save outer loop context for nesting
+        int saved_start = c->loop_start;
+        int saved_break_count = c->break_jump_count;
+        int saved_break_cap = c->break_jump_capacity;
+        int *saved_breaks = c->break_jumps;
+
+        c->loop_start = c->chunk->count;
+        c->break_jumps = NULL;
+        c->break_jump_count = 0;
+        c->break_jump_capacity = 0;
+
         compile_node(c, node->as.loop.body);
-        emit_loop(c, loop_start);
+        emit_loop(c, c->loop_start);
+
+        // Patch all breaks collected during this loop
+        for (int i = 0; i < c->break_jump_count; i++) {
+            patch_jump(c, c->break_jumps[i]);
+        }
+        free(c->break_jumps);
+
+        // Restore outer context
+        c->loop_start = saved_start;
+        c->break_jumps = saved_breaks;
+        c->break_jump_count = saved_break_count;
+        c->break_jump_capacity = saved_break_cap;
         break;
     }
 
     case AST_BREAK: {
-        const char *notes[] = {
-            "help: `break` is reserved for future loop control"
-        };
-        diag_emit(LEVEL_ERROR, c->source ? c->source->file_path : NULL,
-                  node->line, node->column, 0,
-                  "break not yet implemented",
-                  c->source, notes, 1);
-        c->had_error = true;
+        if (c->loop_start < 0) {
+            const char *notes[] = {
+                "help: `break` can only be used inside a loop"
+            };
+            diag_emit(LEVEL_ERROR, c->source ? c->source->file_path : NULL,
+                      node->line, node->column, 0,
+                      "break outside loop",
+                      c->source, notes, 1);
+            c->had_error = true;
+            break;
+        }
+        // Emit placeholder jump to end of loop, record for patching
+        int jump = emit_jump(c, OP_JUMP);
+        if (c->break_jump_count >= c->break_jump_capacity) {
+            int old = c->break_jump_capacity;
+            c->break_jump_capacity = old < 8 ? 8 : old * 2;
+            c->break_jumps = realloc(
+                c->break_jumps,
+                (size_t)c->break_jump_capacity * sizeof(int));
+        }
+        c->break_jumps[c->break_jump_count++] = jump;
         break;
     }
 
     case AST_CONTINUE: {
-        const char *notes[] = {
-            "help: `continue` is reserved for future loop control"
-        };
-        diag_emit(LEVEL_ERROR, c->source ? c->source->file_path : NULL,
-                  node->line, node->column, 0,
-                  "continue not yet implemented",
-                  c->source, notes, 1);
-        c->had_error = true;
+        if (c->loop_start < 0) {
+            const char *notes[] = {
+                "help: `continue` can only be used inside a loop"
+            };
+            diag_emit(LEVEL_ERROR, c->source ? c->source->file_path : NULL,
+                      node->line, node->column, 0,
+                      "continue outside loop",
+                      c->source, notes, 1);
+            c->had_error = true;
+            break;
+        }
+        emit_loop(c, c->loop_start);
         break;
     }
 
@@ -386,6 +453,10 @@ bool codegen_compile(AstNode *ast, Chunk *chunk, SourceInfo *source) {
     compiler.had_error = false;
     compiler.local_count = 0;
     compiler.current_line = 0;
+    compiler.loop_start = -1;
+    compiler.break_jumps = NULL;
+    compiler.break_jump_count = 0;
+    compiler.break_jump_capacity = 0;
 
     compile_node(&compiler, ast);
     emit_byte(&compiler, OP_HALT);

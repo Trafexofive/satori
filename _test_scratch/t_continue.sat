@@ -1,0 +1,9 @@
+// test: continue in loop
+import io
+let i := 0
+loop {
+    i = i + 1
+    if i < 3 then continue
+    io.println i
+    if i >= 5 then break
+}

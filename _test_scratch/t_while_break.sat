@@ -1,0 +1,8 @@
+// test: while with break
+import io
+let x := 0
+while x < 10 then {
+    io.println x
+    x = x + 1
+    if x >= 5 then break
+}

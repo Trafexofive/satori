@@ -351,6 +351,23 @@ static AstNode *parse_statement(Parser *p) {
   if (match(p, TOKEN_CONTINUE)) {
     return ast_make_continue(p->previous.line, p->previous.column);
   }
+  
+  if (match(p, TOKEN_LEFT_BRACE)) {
+    // Block: { statement* }
+    int line = p->previous.line;
+    int column = p->previous.column;
+    AstNode *block = ast_make_block(line, column);
+    skip_newlines(p);
+    while (!check(p, TOKEN_RIGHT_BRACE) && !check(p, TOKEN_EOF)) {
+      AstNode *stmt = parse_statement(p);
+      if (stmt) {
+        ast_block_add_statement(block, stmt);
+      }
+      skip_newlines(p);
+    }
+    consume(p, TOKEN_RIGHT_BRACE, "expected '}' after block");
+    return block;
+  }
 
   // Expression statement
   return parse_expression(p);
