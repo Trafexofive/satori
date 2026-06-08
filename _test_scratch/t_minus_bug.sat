@@ -1,0 +1,4 @@
+// test: MINUS operator inside call arguments
+// io.println 10 - 4 should print 6 (subtraction), not (10, -4) as two args
+import io
+io.println 10 - 4

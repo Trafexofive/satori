@@ -208,9 +208,11 @@ static AstNode *parse_call(Parser *p) {
       free(member);
     } else if (check(p, TOKEN_STRING) || check(p, TOKEN_INT) ||
                check(p, TOKEN_FLOAT) || check(p, TOKEN_IDENTIFIER) ||
-               check(p, TOKEN_MINUS) || check(p, TOKEN_BANG) ||
                check(p, TOKEN_LEFT_PAREN)) {
       // Function call with arguments (comma-separated, no parens)
+      // Note: TOKEN_MINUS and TOKEN_BANG excluded here because
+      // they should be parsed as binary operators, not arg starts.
+      // Unary minus in calls requires parens: io.println(-5)
       int arg_capacity = 4;
       int arg_count = 0;
       AstNode **args = malloc(sizeof(AstNode *) * arg_capacity);
