@@ -191,6 +191,12 @@ static AstNode *parse_primary(Parser *p) {
     return ast_make_bool_literal(false, p->previous.line, p->previous.column);
   }
 
+  if (match(p, TOKEN_LEFT_PAREN)) {
+    AstNode *expr = parse_expression(p);
+    consume(p, TOKEN_RIGHT_PAREN, "expected ')' after expression");
+    return expr;
+  }
+
   if (match(p, TOKEN_IDENTIFIER)) {
     char *name = token_to_string(p->previous);
     AstNode *node =

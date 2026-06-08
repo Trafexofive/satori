@@ -1,0 +1,3 @@
+// test: parentheses grouping (expr)
+import io
+io.println (2 + 3) * 4
