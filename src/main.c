@@ -11,15 +11,69 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
+// ── Styled help output ────────────────────────────────────────────
+
+#define C_BOLD   "\033[1m"
+#define C_DIM    "\033[90m"
+#define C_GREEN  "\033[32m"
+#define C_CYAN   "\033[36m"
+#define C_YELLOW "\033[33m"
+#define C_RESET  "\033[0m"
+
+static bool use_color_stdout(void) {
+    static int cached = -1;
+    if (cached < 0) cached = isatty(STDOUT_FILENO) ? 1 : 0;
+    return cached == 1;
+}
+
+#define c_help(code) (use_color_stdout() ? (code) : "")
+#define with_color(code) (use_color_stdout())
 
 static void print_usage(const char *program) {
-    printf("Usage: %s [options] <file>\n", program);
-    printf("Options:\n");
-    printf("  -h, --help       Show this help message\n");
-    printf("  -v, --version    Show version\n");
-    printf("  -t, --tokens     Dump tokens only\n");
-    printf("  -a, --ast        Dump AST only\n");
-    printf("  -i, --interpret  Interpret mode (default)\n");
+    bool col = use_color_stdout();
+    printf("\n");
+    printf("%s    \U0001f338 satori %s%s\n",
+           col ? C_BOLD C_GREEN : "", col ? C_RESET : "",
+           col ? C_DIM "-- Clean. Fast. Explicit." C_RESET : "-- Clean. Fast. Explicit.");
+    printf("\n");
+    printf("%sUSAGE%s\n", c_help(C_BOLD), c_help(C_RESET));
+    printf("  %s%s %s[options] %s<file>%s\n",
+           c_help(C_DIM), program, c_help(C_RESET),
+           c_help(C_YELLOW), c_help(C_RESET));
+    printf("\n");
+    printf("%sEXECUTION%s\n", c_help(C_BOLD), c_help(C_RESET));
+    printf("  %s-i, --interpret%s   Run the program %s(default)%s\n",
+           c_help(C_CYAN), c_help(C_RESET),
+           c_help(C_DIM), c_help(C_RESET));
+    printf("\n");
+    printf("%sINSPECTION%s\n", c_help(C_BOLD), c_help(C_RESET));
+    printf("  %s-t, --tokens%s     Show token stream from lexer\n",
+           c_help(C_CYAN), c_help(C_RESET));
+    printf("  %s-a, --ast%s        Dump Abstract Syntax Tree\n",
+           c_help(C_CYAN), c_help(C_RESET));
+    printf("\n");
+    printf("%sINFO%s\n", c_help(C_BOLD), c_help(C_RESET));
+    printf("  %s-h, --help%s       Show this help\n",
+           c_help(C_CYAN), c_help(C_RESET));
+    printf("  %s-v, --version%s    Show version info\n",
+           c_help(C_CYAN), c_help(C_RESET));
+    printf("\n");
+    printf("%sEXAMPLES%s\n", c_help(C_BOLD), c_help(C_RESET));
+    printf("  %ssatori hello.sat%s             Run a program\n",
+           c_help(C_DIM), c_help(C_RESET));
+    printf("  %ssatori -a hello.sat%s          Inspect the AST\n",
+           c_help(C_DIM), c_help(C_RESET));
+    printf("  %ssatori -t hello.sat | head%s   Debug the lexer\n",
+           c_help(C_DIM), c_help(C_RESET));
+    printf("  %ssatori -v%s                    Version info\n",
+           c_help(C_DIM), c_help(C_RESET));
+    printf("\n");
+    printf("%sFor more see %sdocs/ %sand %sexamples/%s\n",
+           c_help(C_DIM),
+           c_help(C_YELLOW), c_help(C_DIM),
+           c_help(C_YELLOW), c_help(C_RESET));
     printf("\n");
 }
 
@@ -27,6 +81,8 @@ static void print_version(void) {
     printf("satori %d.%d.%d\n", SATORI_VERSION_MAJOR, SATORI_VERSION_MINOR,
            SATORI_VERSION_PATCH);
     printf("Built from scratch with focus 🌸\n");
+    printf("Error system: Rust-style diagnostics v1 (diag_emit)\n");
+    printf("Standard: C99, GCC\n");
 }
 
 static char *read_file(const char *path) {
